@@ -1,1 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kósmos en Apognōsei · Universo Velkaris</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Marked para Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Google Fonts + Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0c0e12;
+            font-family: 'Inter', sans-serif;
+            color: #e0e4ec;
+            padding: 1.5rem;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            border-bottom: 1px solid #2c3e4e;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .title h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #c0d4e8, #5B8CBF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .title p {
+            font-size: 0.8rem;
+            color: #8aaec0;
+            font-style: italic;
+        }
+        .badge {
+            background: #1a1f26;
+            padding: 0.4rem 1rem;
+            border-left: 3px solid #5B8CBF;
+            font-family: monospace;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-bottom: 1px solid #2c3e4e;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #8aaec0;
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+        }
+        .tab-btn.active {
+            background: #1e2a32;
+            color: #5B8CBF;
+            border-bottom: 2px solid #5B8CBF;
+        }
+        .tab-content { display: none; animation: fade 0.2s; }
+        .tab-content.active { display: block; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: #14181f;
+            border: 1px solid #2c3e4e;
+            border-radius: 20px;
+            padding: 1.2rem;
+            transition: 0.1s;
+        }
+        .card:hover { border-color: #5B8CBF; box-shadow: 0 0 8px rgba(91,140,191,0.2); }
+        .card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; margin-bottom: 0.5rem; color: #bcd0e0; }
+        .btn-icon, button {
+            background: #1e2a32;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            color: #e0e4ec;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-icon:hover, button:hover { background: #2c3e4e; color: #5B8CBF; }
+        .delete-btn { background: #3a1e1e; color: #e0a0a0; }
+        .delete-btn:hover { background: #8b2c2c; color: white; }
+        form {
+            background: #101418;
+            padding: 1rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #2c3e4e;
+        }
+        input, textarea, select {
+            width: 100%;
+            background: #1a1f26;
+            border: 1px solid #2c3e4e;
+            padding: 0.6rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 0.8rem;
+            font-family: inherit;
+        }
+        textarea { min-height: 80px; }
+        .markdown-preview {
+            background: #0c0e12;
+            padding: 0.8rem;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .foro-post {
+            background: #101418;
+            border-left: 3px solid #5B8CBF;
+            margin-bottom: 1.2rem;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        .respuesta {
+            margin-left: 1.5rem;
+            margin-top: 0.8rem;
+            border-left: 2px solid #2c3e4e;
+            padding-left: 1rem;
+        }
+        .small { font-size: 0.7rem; color: #8aaec0; }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            border-top: 1px solid #2c3e4e;
+            padding-top: 1rem;
+            color: #6a8a9a;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="title">
+            <h1><i class="fas fa-globe"></i> Kósmos en Apognōsei</h1>
+            <p>Expediente completo · Velkaris N. Vaelstrum — "Entender es dominar"</p>
+        </div>
+        <div class="badge"><i class="fas fa-dice-d20"></i> V. N. Vaelstrum · κόσμος ἐν ἀπογνώσει</div>
+    </div>
 
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="timeline">📅 Línea de tiempo</button>
+        <button class="tab-btn" data-tab="personajes">👥 Personajes</button>
+        <button class="tab-btn" data-tab="lugares">🏛️ Lugares</button>
+        <button class="tab-btn" data-tab="relatos">📖 Relatos</button>
+        <button class="tab-btn" data-tab="compendios">📚 Compendios</button>
+        <button class="tab-btn" data-tab="foro">💬 Foro / Teorías</button>
+    </div>
+
+    <!-- ======================== SECCIONES ======================== -->
+    <div id="timeline" class="tab-content active"><h2><i class="fas fa-timeline"></i> Eventos clave</h2><button id="newEventBtn" class="btn-icon" style="margin-bottom:1rem">+ Nuevo evento</button><div id="timelineContainer" class="card-grid"></div><div id="eventForm" style="display:none;"><form id="timelineForm"><input type="text" id="eventId" hidden><input type="text" id="eventTitle" placeholder="Título" required><input type="date" id="eventDate"><textarea id="eventDesc" placeholder="Descripción..."></textarea><input type="text" id="eventType" placeholder="Tipo (origen, tragedia...)"><button type="submit">Guardar</button><button type="button" id="cancelEvent" class="delete-btn">Cancelar</button></form></div></div>
+    <div id="personajes" class="tab-content"><h2><i class="fas fa-users"></i> Personajes</h2><button id="newPersonajeBtn" class="btn-icon">+ Nuevo personaje</button><div id="personajesContainer" class="card-grid"></div><div id="personajeForm" style="display:none;"><form id="personajesForm"><input type="text" id="personajeId" hidden><input type="text" id="personajeNombre" placeholder="Nombre" required><input type="text" id="personajeRol" placeholder="Rol (aliado/antagonista/neutral)"><textarea id="personajeDesc" placeholder="Descripción..."></textarea><input type="text" id="personajeRelaciones" placeholder="IDs otros personajes (separados por coma)"><button type="submit">Guardar</button><button type="button" id="cancelPersonaje" class="delete-btn">Cancelar</button></form></div></div>
+    <div id="lugares" class="tab-content"><h2><i class="fas fa-map-marker-alt"></i> Lugares</h2><button id="newLugarBtn" class="btn-icon">+ Nuevo lugar</button><div id="lugaresContainer" class="card-grid"></div><div id="lugarForm" style="display:none;"><form id="lugaresForm"><input type="text" id="lugarId" hidden><input type="text" id="lugarNombre" placeholder="Nombre" required><input type="text" id="lugarTipo" placeholder="Tipo (ciudad/reino)"><textarea id="lugarDesc" placeholder="Descripción..."></textarea><button type="submit">Guardar</button><button type="button" id="cancelLugar" class="delete-btn">Cancelar</button></form></div></div>
+    <div id="relatos" class="tab-content"><h2><i class="fas fa-feather-alt"></i> Relatos</h2><button id="newRelatoBtn" class="btn-icon">+ Nuevo relato</button><div id="relatosContainer" class="card-grid"></div><div id="relatoForm" style="display:none;"><form id="relatosForm"><input type="text" id="relatoId" hidden><input type="text" id="relatoTitulo" placeholder="Título" required><textarea id="relatoContenido" placeholder="Contenido en Markdown..."></textarea><div class="markdown-preview" id="markdownPreview">Vista previa...</div><input type="text" id="relatoEtiquetas" placeholder="Etiquetas (separadas por coma)"><button type="submit">Guardar</button><button type="button" id="cancelRelato" class="delete-btn">Cancelar</button></form></div></div>
+    <div id="compendios" class="tab-content"><h2><i class="fas fa-layer-group"></i> Compendios temáticos</h2><button id="newCompendioBtn" class="btn-icon">+ Nuevo compendio</button><div id="compendiosContainer" class="card-grid"></div><div id="compendioForm" style="display:none;"><form id="compendiosForm"><input type="text" id="compendioId" hidden><input type="text" id="compendioNombre" placeholder="Nombre" required><textarea id="compendioDesc" placeholder="Descripción..."></textarea><input type="text" id="compendioEntidades" placeholder="IDs de entidades (personajes, lugares, relatos, eventos) separados por coma"><button type="submit">Guardar</button><button type="button" id="cancelCompendio" class="delete-btn">Cancelar</button></form></div></div>
+    <div id="foro" class="tab-content"><h2><i class="fas fa-comments"></i> Foro de Teorías</h2><button id="newPostBtn" class="btn-icon">+ Nueva publicación</button><div id="foroContainer"></div><div id="postForm" style="display:none;"><form id="foroPostForm"><input type="text" id="postId" hidden><input type="text" id="postTitulo" placeholder="Título" required><textarea id="postContenido" placeholder="Contenido..."></textarea><input type="text" id="postAutor" placeholder="Tu nombre"><button type="submit">Publicar</button><button type="button" id="cancelPost" class="delete-btn">Cancelar</button></form></div><div id="respuestaForm" style="display:none;"><form id="respuestaFormulario"><input type="text" id="respuestaPostId" hidden><textarea id="respuestaTexto" placeholder="Escribe tu respuesta..."></textarea><input type="text" id="respuestaAutor" placeholder="Tu nombre"><button type="submit">Responder</button><button type="button" id="cancelRespuesta" class="delete-btn">Cancelar</button></form></div></div>
+    <footer><i class="fas fa-database"></i> Firebase Firestore · Kósmos en Apognōsei — Datos en tiempo real</footer>
+</div>
+
+<script>
+    // Configuración Firebase (misma del usuario)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDo7ebAVDvYEjPDscivWWKXLUoGEAGBeIM",
+        authDomain: "thenewwest-7eb5f.firebaseapp.com",
+        databaseURL: "https://thenewwest-7eb5f-default-rtdb.firebaseio.com",
+        projectId: "thenewwest-7eb5f",
+        storageBucket: "thenewwest-7eb5f.firebasestorage.app",
+        messagingSenderId: "605270552271",
+        appId: "1:605270552271:web:a58b5b7f619e5804d7d1ba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Referencias
+    const timelineRef = db.collection('timeline');
+    const personajesRef = db.collection('personajes');
+    const lugaresRef = db.collection('lugares');
+    const relatosRef = db.collection('relatos');
+    const compendiosRef = db.collection('compendios');
+    const foroPostsRef = db.collection('foro_posts');
+    const foroRespuestasRef = db.collection('foro_respuestas');
+
+    // Helper escape
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // ========================== RENDER GENERAL ==========================
+    function renderTimeline(snapshot) {
+        const container = document.getElementById('timelineContainer');
+        if (!container) return;
+        let items = []; snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+        items.sort((a,b) => (a.fecha || '').localeCompare(b.fecha || ''));
+        if(!items.length){ container.innerHTML='<div class="card">No hay eventos. Crea uno.</div>'; return; }
+        container.innerHTML = items.map(ev => `<div class="card"><h3>${escapeHtml(ev.titulo)}</h3><div class="small">📅 ${ev.fecha || 'Fecha?'} | ${ev.tipo || 'Evento'}</div><p>${escapeHtml(ev.descripcion || '')}</p><button class="edit-event btn-icon" data-id="${ev.id}" data-col="timeline">✏️ Editar</button> <button class="delete-item delete-btn" data-id="${ev.id}" data-col="timeline">🗑️ Eliminar</button></div>`).join('');
+        attachDeleteEditButtons();
+    }
+    function renderPersonajes(snapshot) {
+        const container = document.getElementById('personajesContainer');
+        let items = []; snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+        if(!items.length){ container.innerHTML='<div class="card">No hay personajes.</div>'; return; }
+        container.innerHTML = items.map(p => `<div class="card"><h3>${escapeHtml(p.nombre)}</h3><div class="small">${p.rol || 'Rol desconocido'}</div><p>${escapeHtml(p.descripcion || '')}</p><button class="edit-item btn-icon" data-id="${p.id}" data-col="personajes">✏️</button> <button class="delete-item delete-btn" data-id="${p.id}" data-col="personajes">🗑️</button></div>`).join('');
+        attachDeleteEditButtons();
+    }
+    function renderLugares(snapshot) {
+        const container = document.getElementById('lugaresContainer');
+        let items = []; snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+        if(!items.length){ container.innerHTML='<div class="card">No hay lugares.</div>'; return; }
+        container.innerHTML = items.map(l => `<div class="card"><h3>${escapeHtml(l.nombre)}</h3><div class="small">${l.tipo || 'Lugar'}</div><p>${escapeHtml(l.descripcion || '')}</p><button class="edit-item btn-icon" data-id="${l.id}" data-col="lugares">✏️</button> <button class="delete-item delete-btn" data-id="${l.id}" data-col="lugares">🗑️</button></div>`).join('');
+        attachDeleteEditButtons();
+    }
+    function renderRelatos(snapshot) {
+        const container = document.getElementById('relatosContainer');
+        let items = []; snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+        if(!items.length){ container.innerHTML='<div class="card">No hay relatos.</div>'; return; }
+        container.innerHTML = items.map(r => `<div class="card"><h3>${escapeHtml(r.titulo)}</h3><div class="small">🏷️ ${r.etiquetas || 'sin etiquetas'}</div><div class="markdown-preview" style="max-height:150px; overflow:auto;">${marked.parse(r.contenido || '')}</div><button class="edit-item btn-icon" data-id="${r.id}" data-col="relatos">✏️</button> <button class="delete-item delete-btn" data-id="${r.id}" data-col="relatos">🗑️</button></div>`).join('');
+        attachDeleteEditButtons();
+    }
+    function renderCompendios(snapshot) {
+        const container = document.getElementById('compendiosContainer');
+        let items = []; snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+        if(!items.length){ container.innerHTML='<div class="card">No hay compendios.</div>'; return; }
+        container.innerHTML = items.map(c => `<div class="card"><h3>${escapeHtml(c.nombre)}</h3><p>${escapeHtml(c.descripcion || '')}</p><div class="small">Entidades: ${c.entidades ? c.entidades.join(', ') : 'ninguna'}</div><button class="edit-item btn-icon" data-id="${c.id}" data-col="compendios">✏️</button> <button class="delete-item delete-btn" data-id="${c.id}" data-col="compendios">🗑️</button></div>`).join('');
+        attachDeleteEditButtons();
+    }
+    async function renderForo() {
+        const container = document.getElementById('foroContainer');
+        const postsSnap = await foroPostsRef.orderBy('fecha', 'desc').get();
+        let posts = []; postsSnap.forEach(doc => posts.push({id: doc.id, ...doc.data()}));
+        if(posts.length === 0){ container.innerHTML = '<div class="card">No hay publicaciones. ¡Sé el primero en teorizar!</div>'; return; }
+        let html = '';
+        for(let post of posts){
+            const respSnap = await foroRespuestasRef.where('postId', '==', post.id).orderBy('fecha', 'asc').get();
+            let respuestas = []; respSnap.forEach(d => respuestas.push({id: d.id, ...d.data()}));
+            html += `<div class="foro-post"><h3>${escapeHtml(post.titulo)}</h3><div class="small">Por ${escapeHtml(post.autor || 'Anónimo')} · ${new Date(post.fecha?.toDate()).toLocaleString()}</div><p>${escapeHtml(post.contenido)}</p><button class="responder-btn btn-icon" data-postid="${post.id}">💬 Responder</button><div id="respuestas-${post.id}">`;
+            respuestas.forEach(r => { html += `<div class="respuesta"><strong>${escapeHtml(r.autor || 'Anónimo')}</strong><div class="small">${new Date(r.fecha?.toDate()).toLocaleString()}</div><p>${escapeHtml(r.texto)}</p></div>`; });
+            html += `</div></div>`;
+        }
+        container.innerHTML = html;
+        document.querySelectorAll('.responder-btn').forEach(btn => {
+            btn.onclick = () => { document.getElementById('respuestaPostId').value = btn.dataset.postid; document.getElementById('respuestaForm').style.display = 'block'; };
+        });
+    }
+
+    // ========================== CRUD Y EVENTOS ==========================
+    function attachDeleteEditButtons() {
+        document.querySelectorAll('.delete-item').forEach(btn => {
+            btn.onclick = async () => {
+                if(confirm('Eliminar permanentemente?')) await db.collection(btn.dataset.col).doc(btn.dataset.id).delete();
+            };
+        });
+        document.querySelectorAll('.edit-item, .edit-event').forEach(btn => {
+            btn.onclick = async () => {
+                const col = btn.dataset.col;
+                const id = btn.dataset.id;
+                const doc = await db.collection(col).doc(id).get();
+                const data = doc.data();
+                if(col === 'timeline'){
+                    document.getElementById('eventId').value = id;
+                    document.getElementById('eventTitle').value = data.titulo || '';
+                    document.getElementById('eventDate').value = data.fecha || '';
+                    document.getElementById('eventDesc').value = data.descripcion || '';
+                    document.getElementById('eventType').value = data.tipo || '';
+                    document.getElementById('eventForm').style.display = 'block';
+                } else if(col === 'personajes'){
+                    document.getElementById('personajeId').value = id;
+                    document.getElementById('personajeNombre').value = data.nombre || '';
+                    document.getElementById('personajeRol').value = data.rol || '';
+                    document.getElementById('personajeDesc').value = data.descripcion || '';
+                    document.getElementById('personajeRelaciones').value = (data.relaciones || []).join(',');
+                    document.getElementById('personajeForm').style.display = 'block';
+                } else if(col === 'lugares'){
+                    document.getElementById('lugarId').value = id;
+                    document.getElementById('lugarNombre').value = data.nombre || '';
+                    document.getElementById('lugarTipo').value = data.tipo || '';
+                    document.getElementById('lugarDesc').value = data.descripcion || '';
+                    document.getElementById('lugarForm').style.display = 'block';
+                } else if(col === 'relatos'){
+                    document.getElementById('relatoId').value = id;
+                    document.getElementById('relatoTitulo').value = data.titulo || '';
+                    document.getElementById('relatoContenido').value = data.contenido || '';
+                    document.getElementById('relatoEtiquetas').value = (data.etiquetas || []).join(',');
+                    document.getElementById('relatoForm').style.display = 'block';
+                    document.getElementById('markdownPreview').innerHTML = marked.parse(data.contenido || '');
+                } else if(col === 'compendios'){
+                    document.getElementById('compendioId').value = id;
+                    document.getElementById('compendioNombre').value = data.nombre || '';
+                    document.getElementById('compendioDesc').value = data.descripcion || '';
+                    document.getElementById('compendioEntidades').value = (data.entidades || []).join(',');
+                    document.getElementById('compendioForm').style.display = 'block';
+                }
+            };
+        });
+    }
+
+    // Guardar formularios
+    document.getElementById('timelineForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('eventId').value;
+        const data = { titulo: document.getElementById('eventTitle').value, fecha: document.getElementById('eventDate').value, descripcion: document.getElementById('eventDesc').value, tipo: document.getElementById('eventType').value };
+        if(id) await timelineRef.doc(id).set(data, {merge: true});
+        else await timelineRef.add(data);
+        document.getElementById('eventForm').style.display = 'none';
+        document.getElementById('timelineForm').reset();
+    });
+    document.getElementById('personajesForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('personajeId').value;
+        const data = { nombre: document.getElementById('personajeNombre').value, rol: document.getElementById('personajeRol').value, descripcion: document.getElementById('personajeDesc').value, relaciones: document.getElementById('personajeRelaciones').value.split(',').map(s=>s.trim()).filter(Boolean) };
+        if(id) await personajesRef.doc(id).set(data, {merge: true});
+        else await personajesRef.add(data);
+        document.getElementById('personajeForm').style.display = 'none';
+        document.getElementById('personajesForm').reset();
+    });
+    document.getElementById('lugaresForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('lugarId').value;
+        const data = { nombre: document.getElementById('lugarNombre').value, tipo: document.getElementById('lugarTipo').value, descripcion: document.getElementById('lugarDesc').value };
+        if(id) await lugaresRef.doc(id).set(data, {merge: true});
+        else await lugaresRef.add(data);
+        document.getElementById('lugarForm').style.display = 'none';
+        document.getElementById('lugaresForm').reset();
+    });
+    document.getElementById('relatosForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('relatoId').value;
+        const data = { titulo: document.getElementById('relatoTitulo').value, contenido: document.getElementById('relatoContenido').value, etiquetas: document.getElementById('relatoEtiquetas').value.split(',').map(s=>s.trim()).filter(Boolean) };
+        if(id) await relatosRef.doc(id).set(data, {merge: true});
+        else await relatosRef.add(data);
+        document.getElementById('relatoForm').style.display = 'none';
+        document.getElementById('relatosForm').reset();
+    });
+    document.getElementById('compendiosForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('compendioId').value;
+        const data = { nombre: document.getElementById('compendioNombre').value, descripcion: document.getElementById('compendioDesc').value, entidades: document.getElementById('compendioEntidades').value.split(',').map(s=>s.trim()).filter(Boolean) };
+        if(id) await compendiosRef.doc(id).set(data, {merge: true});
+        else await compendiosRef.add(data);
+        document.getElementById('compendioForm').style.display = 'none';
+        document.getElementById('compendiosForm').reset();
+    });
+    document.getElementById('foroPostForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('postId').value;
+        const data = { titulo: document.getElementById('postTitulo').value, contenido: document.getElementById('postContenido').value, autor: document.getElementById('postAutor').value || 'Anónimo', fecha: new Date() };
+        if(id) await foroPostsRef.doc(id).set(data, {merge: true});
+        else await foroPostsRef.add(data);
+        document.getElementById('postForm').style.display = 'none';
+        document.getElementById('foroPostForm').reset();
+        renderForo();
+    });
+    document.getElementById('respuestaFormulario')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const postId = document.getElementById('respuestaPostId').value;
+        const texto = document.getElementById('respuestaTexto').value;
+        const autor = document.getElementById('respuestaAutor').value || 'Anónimo';
+        if(!texto) return;
+        await foroRespuestasRef.add({ postId, texto, autor, fecha: new Date() });
+        document.getElementById('respuestaForm').style.display = 'none';
+        document.getElementById('respuestaFormulario').reset();
+        renderForo();
+    });
+
+    // Botones nuevo / cancelar
+    document.getElementById('newEventBtn')?.addEventListener('click', () => { document.getElementById('eventForm').style.display = 'block'; document.getElementById('timelineForm').reset(); document.getElementById('eventId').value = ''; });
+    document.getElementById('cancelEvent')?.addEventListener('click', () => { document.getElementById('eventForm').style.display = 'none'; });
+    document.getElementById('newPersonajeBtn')?.addEventListener('click', () => { document.getElementById('personajeForm').style.display = 'block'; document.getElementById('personajesForm').reset(); document.getElementById('personajeId').value = ''; });
+    document.getElementById('cancelPersonaje')?.addEventListener('click', () => { document.getElementById('personajeForm').style.display = 'none'; });
+    document.getElementById('newLugarBtn')?.addEventListener('click', () => { document.getElementById('lugarForm').style.display = 'block'; document.getElementById('lugaresForm').reset(); document.getElementById('lugarId').value = ''; });
+    document.getElementById('cancelLugar')?.addEventListener('click', () => { document.getElementById('lugarForm').style.display = 'none'; });
+    document.getElementById('newRelatoBtn')?.addEventListener('click', () => { document.getElementById('relatoForm').style.display = 'block'; document.getElementById('relatosForm').reset(); document.getElementById('relatoId').value = ''; });
+    document.getElementById('cancelRelato')?.addEventListener('click', () => { document.getElementById('relatoForm').style.display = 'none'; });
+    document.getElementById('newCompendioBtn')?.addEventListener('click', () => { document.getElementById('compendioForm').style.display = 'block'; document.getElementById('compendiosForm').reset(); document.getElementById('compendioId').value = ''; });
+    document.getElementById('cancelCompendio')?.addEventListener('click', () => { document.getElementById('compendioForm').style.display = 'none'; });
+    document.getElementById('newPostBtn')?.addEventListener('click', () => { document.getElementById('postForm').style.display = 'block'; document.getElementById('foroPostForm').reset(); document.getElementById('postId').value = ''; });
+    document.getElementById('cancelPost')?.addEventListener('click', () => { document.getElementById('postForm').style.display = 'none'; });
+    document.getElementById('cancelRespuesta')?.addEventListener('click', () => { document.getElementById('respuestaForm').style.display = 'none'; });
+
+    // Vista previa de Markdown
+    document.getElementById('relatoContenido')?.addEventListener('input', function(){ document.getElementById('markdownPreview').innerHTML = marked.parse(this.value || ''); });
+
+    // Listeners en tiempo real
+    timelineRef.onSnapshot(renderTimeline);
+    personajesRef.onSnapshot(renderPersonajes);
+    lugaresRef.onSnapshot(renderLugares);
+    relatosRef.onSnapshot(renderRelatos);
+    compendiosRef.onSnapshot(renderCompendios);
+    foroPostsRef.onSnapshot(() => renderForo());
+
+    // Navegación por pestañas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+            if(btn.dataset.tab === 'foro') renderForo();
+        });
+    });
+</script>
+</body>
+</html>
