@@ -662,10 +662,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 /* ============================================================  REALTIME LISTENERS  */
-loreRef.child('timeline').on('value',snap=>{
-  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
+loreRef.child('timeline').on('value', snap => {
+  let items = [];
+  snap.forEach(child => {
+    const val = child.val();
+    // Ignorar nodos que no sean objetos válidos (por ejemplo, si se crearon vacíos)
+    if (val && typeof val === 'object') {
+      items.push({ id: child.key, ...val });
+    } else {
+      console.warn('Evento ignorado (valor inválido):', child.key, val);
+    }
+  });
   items.sort((a,b)=>((a.orden||0)-(b.orden||0))||((a.fecha||'').localeCompare(b.fecha||'')));
-  window._timelineItems=items;renderTimeline(items);
+  window._timelineItems = items;
+  renderTimeline(items);
 });
 loreRef.child('personajes').on('value',snap=>{
   let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
