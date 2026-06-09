@@ -662,43 +662,91 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 /* ============================================================  REALTIME LISTENERS  */
+/* ============================================================  REALTIME LISTENERS  */
 loreRef.child('timeline').on('value', snap => {
   let items = [];
   snap.forEach(child => {
     const val = child.val();
-    // Ignorar nodos que no sean objetos válidos (por ejemplo, si se crearon vacíos)
-    if (val && typeof val === 'object') {
-      items.push({ id: child.key, ...val });
-    } else {
-      console.warn('Evento ignorado (valor inválido):', child.key, val);
-    }
+    if (val && typeof val === 'object') items.push({ id: child.key, ...val });
+    else console.warn('timeline hijo inválido:', child.key, val);
   });
   items.sort((a,b)=>((a.orden||0)-(b.orden||0))||((a.fecha||'').localeCompare(b.fecha||'')));
   window._timelineItems = items;
   renderTimeline(items);
 });
-loreRef.child('personajes').on('value',snap=>{
-  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
-  window._personajesItems=items;renderPersonajes(items);
+
+loreRef.child('personajes').on('value', snap => {
+  let items = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val && typeof val === 'object') items.push({ id: child.key, ...val });
+    else console.warn('personajes hijo inválido:', child.key, val);
+  });
+  window._personajesItems = items;
+  renderPersonajes(items);
 });
-loreRef.child('lugares').on('value',snap=>{
-  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
-  window._lugaresItems=items;renderLugares(items);
+
+loreRef.child('lugares').on('value', snap => {
+  let items = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val && typeof val === 'object') items.push({ id: child.key, ...val });
+    else console.warn('lugares hijo inválido:', child.key, val);
+  });
+  window._lugaresItems = items;
+  renderLugares(items);
 });
-loreRef.child('relatos').on('value',snap=>{
-  allRelatos=[];snap.forEach(c=>allRelatos.push({id:c.key,...c.val()}));
-  renderRelatos(allRelatos);buildTagFilter(allRelatos);populateCompendioSelect();
+
+loreRef.child('relatos').on('value', snap => {
+  allRelatos = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val && typeof val === 'object') allRelatos.push({ id: child.key, ...val });
+    else console.warn('relatos hijo inválido:', child.key, val);
+  });
+  renderRelatos(allRelatos);
+  buildTagFilter(allRelatos);
+  populateCompendioSelect();
 });
-loreRef.child('compendios').on('value',snap=>{
-  allCompendios=[];snap.forEach(c=>allCompendios.push({id:c.key,...c.val()}));
-  renderCompendios(allCompendios);populateCompendioSelect();
+
+loreRef.child('compendios').on('value', snap => {
+  allCompendios = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val && typeof val === 'object') allCompendios.push({ id: child.key, ...val });
+    else console.warn('compendios hijo inválido:', child.key, val);
+  });
+  renderCompendios(allCompendios);
+  populateCompendioSelect();
 });
-foroPostsRef.orderByChild('fecha').on('value',snap=>{
-  let posts=[];snap.forEach(c=>posts.push({id:c.key,...c.val()}));
+
+foroPostsRef.orderByChild('fecha').on('value', snap => {
+  let posts = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val && typeof val === 'object') posts.push({ id: child.key, ...val });
+    else console.warn('foro post hijo inválido:', child.key, val);
+  });
   posts.reverse();
-  foroRespRef.once('value',rs=>{allRespuestas=[];rs.forEach(r=>allRespuestas.push({id:r.key,...r.val()}));renderForo(posts);});
+  foroRespRef.once('value', rs => {
+    allRespuestas = [];
+    rs.forEach(r => {
+      const rval = r.val();
+      if (rval && typeof rval === 'object') allRespuestas.push({ id: r.key, ...rval });
+      else console.warn('respuesta inválida:', r.key, rval);
+    });
+    renderForo(posts);
+  });
 });
-foroRespRef.on('value',snap=>{allRespuestas=[];snap.forEach(r=>allRespuestas.push({id:r.key,...r.val()}));});
+
+foroRespRef.on('value', snap => {
+  allRespuestas = [];
+  snap.forEach(r => {
+    const rval = r.val();
+    if (rval && typeof rval === 'object') allRespuestas.push({ id: r.key, ...rval });
+    else console.warn('respuesta (directa) inválida:', r.key, rval);
+  });
+});
 
 /* ============================================================  TIMELINE RENDER  */
 const typeColors={origen:'#9a6ff5',tragedia:'#e07070',descubrimiento:'#7ec8c8',encuentro:'#b8922a',transformacion:'#6fcaa0',otro:'#7a7099'};
