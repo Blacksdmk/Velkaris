@@ -4,1107 +4,251 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kósmos en Apognōsei · Velkaris N. Vaelstrum</title>
-
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<!-- Marked.js -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-/* ============================================================
-   TOKENS — Paleta Velkaris
-   Púrpura como color del conocimiento, negro como el vacío,
-   dorado apagado como la verdad descubierta tarde.
-============================================================ */
-:root {
-  --void:        #07080b;
-  --deep:        #0d0e14;
-  --surface:     #111320;
-  --raised:      #181a27;
-  --border:      #2a2640;
-  --border-glow: #5b3fa6;
-
-  --purple-dim:  #3d2b7a;
-  --purple-mid:  #6b45c8;
-  --purple-vivid:#9a6ff5;
-  --purple-soft: #c4a8ff;
-  --purple-mist: rgba(107,69,200,0.12);
-
-  --gold:        #b8922a;
-  --gold-soft:   #d4b46a;
-  --gold-dim:    rgba(184,146,42,0.15);
-
-  --text-bright: #f0edf8;
-  --text-main:   #c8c0e0;
-  --text-muted:  #7a7099;
-  --text-faint:  #4a4470;
-
-  --danger:      #7a2535;
-  --danger-soft: #e07090;
-
-  --radius-sm:   8px;
-  --radius-md:   14px;
-  --radius-lg:   22px;
-  --radius-xl:   32px;
-
-  --shadow-glow: 0 0 24px rgba(107,69,200,0.25);
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+:root{
+  --void:#07080b;--deep:#0d0e14;--surface:#111320;--raised:#181a27;
+  --border:#2a2640;--border-glow:#5b3fa6;
+  --purple-dim:#3d2b7a;--purple-mid:#6b45c8;--purple-vivid:#9a6ff5;
+  --purple-soft:#c4a8ff;--purple-mist:rgba(107,69,200,0.12);
+  --gold:#b8922a;--gold-soft:#d4b46a;--gold-dim:rgba(184,146,42,0.15);
+  --text-bright:#f0edf8;--text-main:#c8c0e0;--text-muted:#7a7099;--text-faint:#4a4470;
+  --danger:#7a2535;--danger-soft:#e07090;
+  --r-sm:8px;--r-md:14px;--r-lg:22px;--r-xl:32px;
+  --glow:0 0 24px rgba(107,69,200,0.25);--shadow:0 4px 24px rgba(0,0,0,0.5);
 }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--void);font-family:'Inter',sans-serif;color:var(--text-main);min-height:100vh;overflow-x:hidden}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--deep)}
+::-webkit-scrollbar-thumb{background:var(--purple-dim);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--purple-mid)}
 
-/* ============================================================
-   BASE RESET
-============================================================ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+#starCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
 
-html { scroll-behavior: smooth; }
+.page-wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 1.5rem 4rem}
 
-body {
-  background: var(--void);
-  font-family: 'Inter', sans-serif;
-  color: var(--text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+/* HEADER */
+.site-header{display:flex;flex-direction:column;align-items:center;padding:3.5rem 1rem 2rem;position:relative}
+.header-sigil{width:60px;height:60px;margin-bottom:1.1rem;opacity:0;animation:riseIn 1s ease .3s forwards}
+.header-sigil svg{width:100%;height:100%;filter:drop-shadow(0 0 10px var(--purple-mid))}
+.site-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;letter-spacing:.07em;text-align:center;background:linear-gradient(135deg,var(--purple-soft) 0%,var(--purple-vivid) 50%,var(--gold-soft) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;animation:riseIn 1s ease .5s forwards}
+.site-tagline{font-family:'EB Garamond',serif;font-style:italic;font-size:1rem;color:var(--text-muted);margin-top:.4rem;letter-spacing:.05em;text-align:center;opacity:0;animation:riseIn 1s ease .7s forwards}
+.header-divider{width:220px;height:1px;background:linear-gradient(90deg,transparent,var(--purple-mid),transparent);margin:1.3rem auto 0;opacity:0;animation:riseIn 1s ease .9s forwards}
+.auth-bar{position:absolute;top:1.5rem;right:1.5rem;display:flex;align-items:center;gap:.6rem}
+#userStatus{font-size:.72rem;color:var(--text-muted)}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--purple-soft);padding:.32rem .85rem;border-radius:var(--r-xl);cursor:pointer;font-size:.76rem;font-family:'Inter',sans-serif;transition:border-color .2s,color .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:.3rem}
+.btn-ghost:hover{border-color:var(--purple-mid);color:var(--purple-vivid);box-shadow:0 0 8px rgba(107,69,200,.3)}
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+/* TABS */
+.nav-tabs{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;margin-bottom:2rem;padding:.45rem;background:var(--deep);border:1px solid var(--border);border-radius:var(--r-xl)}
+.tab-btn{background:none;border:none;padding:.55rem 1.2rem;border-radius:var(--r-xl);color:var(--text-muted);cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.02em;transition:all .2s;display:inline-flex;align-items:center;gap:.35rem}
+.tab-btn i{font-size:.72rem}
+.tab-btn:hover{color:var(--purple-soft);background:var(--purple-mist)}
+.tab-btn.active{background:linear-gradient(135deg,var(--purple-dim),#4a3890);color:var(--purple-soft);box-shadow:0 2px 12px rgba(107,69,200,.4)}
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--deep); }
-::-webkit-scrollbar-thumb { background: var(--purple-dim); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--purple-mid); }
+/* TAB CONTENT */
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeSlideIn .3s ease}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-/* ============================================================
-   PARTICLES CANVAS (background)
-============================================================ */
-#starCanvas {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-}
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.6rem}
+.section-title{font-family:'Cinzel',serif;font-size:1.15rem;font-weight:600;color:var(--purple-soft);letter-spacing:.05em;display:flex;align-items:center;gap:.45rem}
+.section-title i{color:var(--purple-mid)}
+/* FIX: admin action row inside section-header uses flex but must not affect admin-only containers */
+.admin-action-row{display:none;align-items:center;gap:.5rem}
 
-/* ============================================================
-   LAYOUT
-============================================================ */
-.page-wrap {
-  position: relative;
-  z-index: 1;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 1.5rem 4rem;
-}
+/* CARDS GRID — columnas en todas las secciones */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem;width:100%}
 
-/* ============================================================
-   HERO HEADER
-============================================================ */
-.site-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3.5rem 1rem 2.5rem;
-  position: relative;
-}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.2rem 1.3rem;transition:border-color .22s,box-shadow .22s,transform .18s;position:relative;overflow:hidden;cursor:default}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to bottom,var(--purple-mid),var(--purple-dim));opacity:0;transition:opacity .22s}
+.card:hover{border-color:var(--border-glow);box-shadow:var(--glow),var(--shadow);transform:translateY(-2px)}
+.card:hover::before{opacity:1}
+.card.clickable{cursor:pointer}
+.card-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;color:var(--text-bright);margin-bottom:.35rem}
+.card-meta{font-size:.72rem;color:var(--text-faint);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.card-meta .tag{background:var(--purple-mist);border:1px solid var(--border);color:var(--purple-soft);padding:.1rem .45rem;border-radius:20px;font-size:.67rem}
+.card-meta .tag.aliado{background:rgba(60,120,80,.2);border-color:rgba(60,120,80,.4);color:#7ec89a}
+.card-meta .tag.antagonista{background:rgba(120,40,40,.2);border-color:rgba(120,40,40,.4);color:#e07070}
+.card-body{font-family:'EB Garamond',serif;font-size:.94rem;line-height:1.6;color:var(--text-main)}
+.card-section{margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border)}
+.card-section-label{font-size:.65rem;color:var(--purple-mid);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.3rem}
+.card-section-body{font-size:.85rem;font-family:'EB Garamond',serif;color:var(--text-main);line-height:1.55}
+.card-img{width:100%;max-height:180px;object-fit:cover;border-radius:var(--r-sm);margin-bottom:.75rem;border:1px solid var(--border)}
+.card-actions{margin-top:.75rem;display:flex;gap:.4rem;flex-wrap:wrap}
 
-.header-sigil {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 1.2rem;
-  opacity: 0;
-  animation: riseIn 1s ease 0.3s forwards;
-}
+/* EMPTY STATE */
+.empty-state{grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--text-faint);font-family:'EB Garamond',serif;font-style:italic;font-size:1rem}
+.empty-state i{display:block;font-size:1.8rem;margin-bottom:.4rem;color:var(--purple-dim)}
 
-.header-sigil svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 12px var(--purple-mid));
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.3rem;padding:.42rem .95rem;border-radius:var(--r-xl);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.76rem;font-weight:500;transition:all .16s}
+.btn-primary{background:linear-gradient(135deg,var(--purple-dim),var(--purple-mid));color:var(--purple-soft);box-shadow:0 2px 8px rgba(107,69,200,.3)}
+.btn-primary:hover{box-shadow:0 4px 14px rgba(107,69,200,.5);transform:translateY(-1px)}
+.btn-secondary{background:var(--raised);border:1px solid var(--border);color:var(--text-main)}
+.btn-secondary:hover{border-color:var(--purple-mid);color:var(--purple-soft)}
+.btn-danger{background:rgba(122,37,53,.3);border:1px solid rgba(122,37,53,.5);color:var(--danger-soft)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:.28rem .65rem;font-size:.7rem}
 
-.site-title {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(1.8rem, 5vw, 3rem);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  background: linear-gradient(135deg, var(--purple-soft) 0%, var(--purple-vivid) 50%, var(--gold-soft) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  opacity: 0;
-  animation: riseIn 1s ease 0.5s forwards;
-}
+/* FORMS */
+.form-panel{background:var(--deep);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem;margin-bottom:1.4rem;animation:fadeSlideIn .22s ease}
+.form-panel h4{font-family:'Cinzel',serif;font-size:.88rem;color:var(--purple-soft);margin-bottom:.9rem;letter-spacing:.04em;display:flex;align-items:center;gap:.35rem}
+.form-group{margin-bottom:.75rem}
+.form-group label{display:block;font-size:.7rem;color:var(--text-muted);margin-bottom:.25rem;letter-spacing:.03em}
+input[type=text],input[type=email],input[type=date],input[type=password],textarea,select{width:100%;background:var(--surface);border:1px solid var(--border);padding:.55rem .75rem;border-radius:var(--r-md);color:var(--text-bright);font-family:'EB Garamond',serif;font-size:.93rem;transition:border-color .18s,box-shadow .18s;outline:none}
+input[type=text]:focus,input[type=email]:focus,input[type=date]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--purple-mid);box-shadow:0 0 0 3px rgba(107,69,200,.14)}
+textarea{min-height:90px;resize:vertical;line-height:1.6}
+select option{background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.form-actions{display:flex;gap:.5rem;margin-top:.9rem;flex-wrap:wrap}
 
-.site-tagline {
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-size: 1rem;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
-  letter-spacing: 0.06em;
-  text-align: center;
-  opacity: 0;
-  animation: riseIn 1s ease 0.7s forwards;
-}
+/* Connections list (personajes) */
+.conn-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.3rem}
+.conn-item{display:grid;grid-template-columns:1fr 1fr auto;gap:.4rem;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.35rem .5rem}
+.conn-remove{background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.1rem .3rem;font-size:.75rem;transition:color .15s}
+.conn-remove:hover{color:var(--danger-soft)}
+.btn-add-conn{background:none;border:1px dashed var(--border);color:var(--text-faint);padding:.35rem .7rem;border-radius:var(--r-md);cursor:pointer;font-size:.75rem;width:100%;text-align:left;transition:all .15s;font-family:'Inter',sans-serif;margin-top:.3rem}
+.btn-add-conn:hover{border-color:var(--purple-mid);color:var(--purple-soft)}
 
-.header-divider {
-  width: 240px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--purple-mid), transparent);
-  margin: 1.5rem auto 0;
-  opacity: 0;
-  animation: riseIn 1s ease 0.9s forwards;
-}
-
-.auth-bar {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-#userStatus {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-}
-
-.btn-ghost {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--purple-soft);
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--radius-xl);
-  cursor: pointer;
-  font-size: 0.78rem;
-  font-family: 'Inter', sans-serif;
-  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
-}
-.btn-ghost:hover {
-  border-color: var(--purple-mid);
-  color: var(--purple-vivid);
-  box-shadow: 0 0 8px rgba(107,69,200,0.3);
-}
-
-/* ============================================================
-   NAV TABS
-============================================================ */
-.nav-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  justify-content: center;
-  margin-bottom: 2.5rem;
-  padding: 0.5rem;
-  background: var(--deep);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: 0.6rem 1.3rem;
-  border-radius: var(--radius-xl);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.tab-btn i { font-size: 0.75rem; }
-
-.tab-btn:hover {
-  color: var(--purple-soft);
-  background: var(--purple-mist);
-}
-
-.tab-btn.active {
-  background: linear-gradient(135deg, var(--purple-dim), #4a3890);
-  color: var(--purple-soft);
-  box-shadow: 0 2px 12px rgba(107,69,200,0.4);
-}
-
-/* ============================================================
-   TAB CONTENT
-============================================================ */
-.tab-content { display: none; }
-.tab-content.active {
-  display: block;
-  animation: fadeSlideIn 0.35s ease;
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Section headers */
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.section-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--purple-soft);
-  letter-spacing: 0.06em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.section-title i { color: var(--purple-mid); }
-
-/* ============================================================
-   CARDS GRID
-============================================================ */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.3rem 1.4rem;
-  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--purple-mid), var(--purple-dim));
-  opacity: 0;
-  transition: opacity 0.25s;
-}
-
-.card:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-glow), var(--shadow-card);
-  transform: translateY(-2px);
-}
-
-.card:hover::before { opacity: 1; }
-
-.card-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-bright);
-  margin-bottom: 0.4rem;
-}
-
-.card-meta {
-  font-size: 0.72rem;
-  color: var(--text-faint);
-  margin-bottom: 0.6rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.card-meta .tag {
-  background: var(--purple-mist);
-  border: 1px solid var(--border);
-  color: var(--purple-soft);
-  padding: 0.1rem 0.5rem;
-  border-radius: 20px;
-  font-size: 0.68rem;
-}
-
-.card-body {
-  font-family: 'EB Garamond', serif;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--text-main);
-}
-
-.card-img {
-  width: 100%;
-  max-height: 200px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  margin-bottom: 0.8rem;
-  border: 1px solid var(--border);
-}
-
-.card-actions {
-  margin-top: 0.8rem;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-/* ============================================================
-   EMPTY STATE
-============================================================ */
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  color: var(--text-faint);
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-size: 1rem;
-}
-
-.empty-state i {
-  display: block;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  color: var(--purple-dim);
-}
-
-/* ============================================================
-   BUTTONS
-============================================================ */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 1rem;
-  border-radius: var(--radius-xl);
-  border: none;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 500;
-  transition: all 0.18s;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--purple-dim), var(--purple-mid));
-  color: var(--purple-soft);
-  box-shadow: 0 2px 8px rgba(107,69,200,0.3);
-}
-.btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(107,69,200,0.5);
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: var(--raised);
-  border: 1px solid var(--border);
-  color: var(--text-main);
-}
-.btn-secondary:hover {
-  border-color: var(--purple-mid);
-  color: var(--purple-soft);
-}
-
-.btn-danger {
-  background: rgba(122,37,53,0.3);
-  border: 1px solid rgba(122,37,53,0.5);
-  color: var(--danger-soft);
-}
-.btn-danger:hover {
-  background: var(--danger);
-  color: #fff;
-}
-
-.btn-icon-sm {
-  background: var(--raised);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 0.3rem 0.6rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-family: 'Inter', sans-serif;
-  transition: all 0.15s;
-}
-.btn-icon-sm:hover {
-  border-color: var(--purple-mid);
-  color: var(--purple-soft);
-}
-
-/* ============================================================
-   ADMIN PANEL (forms)
-============================================================ */
-.admin-only { display: none; }
-
-.form-panel {
-  background: var(--deep);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.4rem;
-  margin-bottom: 1.5rem;
-  animation: fadeSlideIn 0.25s ease;
-}
-
-.form-panel h4 {
-  font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
-  color: var(--purple-soft);
-  margin-bottom: 1rem;
-  letter-spacing: 0.05em;
-}
-
-.form-group { margin-bottom: 0.8rem; }
-
-.form-group label {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-  letter-spacing: 0.04em;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="date"],
-input[type="password"],
-textarea,
-select {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--radius-md);
-  color: var(--text-bright);
-  font-family: 'EB Garamond', serif;
-  font-size: 0.95rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  outline: none;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="date"]:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--purple-mid);
-  box-shadow: 0 0 0 3px rgba(107,69,200,0.15);
-}
-
-textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
-
-select option { background: var(--surface); }
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 1rem;
-}
+/* Estado político chips */
+.politics-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.3rem}
+.politics-item{display:grid;grid-template-columns:auto 1fr auto;gap:.4rem;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.35rem .5rem}
+.politics-badge{font-size:.68rem;padding:.1rem .5rem;border-radius:20px;font-weight:500;white-space:nowrap}
+.pol-aliado{background:rgba(60,120,80,.2);color:#7ec89a;border:1px solid rgba(60,120,80,.3)}
+.pol-guerra{background:rgba(180,50,50,.2);color:#e07070;border:1px solid rgba(180,50,50,.3)}
+.pol-neutral{background:var(--purple-mist);color:var(--purple-soft);border:1px solid var(--border)}
+.pol-comercio{background:rgba(184,146,42,.15);color:var(--gold-soft);border:1px solid rgba(184,146,42,.25)}
+.pol-tension{background:rgba(200,120,40,.15);color:#e0a060;border:1px solid rgba(200,120,40,.25)}
 
 /* Markdown preview */
-.md-preview {
-  background: var(--void);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.8rem 1rem;
-  min-height: 60px;
-  font-family: 'EB Garamond', serif;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: var(--text-main);
-  margin-top: 0.4rem;
+.md-preview{background:var(--void);border:1px solid var(--border);border-radius:var(--r-md);padding:.75rem .9rem;min-height:50px;font-family:'EB Garamond',serif;font-size:.93rem;line-height:1.7;color:var(--text-main);margin-top:.35rem}
+.md-preview h1,.md-preview h2,.md-preview h3{font-family:'Cinzel',serif;color:var(--purple-soft);margin:.5em 0}
+.md-preview p{margin:.35em 0}
+.md-preview em{color:var(--gold-soft)}
+.md-preview strong{color:var(--text-bright)}
+.md-preview blockquote{border-left:3px solid var(--purple-mid);padding-left:.75rem;color:var(--text-muted)}
+.md-preview code{background:var(--surface);padding:.1rem .3rem;border-radius:4px;font-size:.85em}
+.md-preview hr{border:none;border-top:1px solid var(--border);margin:.7em 0}
+
+/* Image upload */
+.img-upload-area{border:2px dashed var(--border);border-radius:var(--r-md);padding:1rem;text-align:center;cursor:pointer;transition:border-color .18s,background .18s;color:var(--text-faint);font-size:.78rem;font-family:'Inter',sans-serif}
+.img-upload-area:hover{border-color:var(--purple-mid);background:var(--purple-mist);color:var(--purple-soft)}
+.img-upload-area i{display:block;font-size:1.3rem;margin-bottom:.25rem}
+.img-preview-thumb{max-width:100%;max-height:130px;border-radius:var(--r-sm);display:none;margin-top:.4rem;border:1px solid var(--border)}
+
+/* TIMELINE */
+.timeline-list{position:relative;padding-left:1.8rem;display:flex;flex-direction:column;gap:0}
+.timeline-list::before{content:'';position:absolute;left:.65rem;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--purple-mid),transparent)}
+.timeline-item{position:relative;margin-bottom:1.3rem}
+.timeline-item::before{content:'';position:absolute;left:-1.4rem;top:.7rem;width:9px;height:9px;border-radius:50%;background:var(--purple-mid);border:2px solid var(--void);box-shadow:0 0 7px var(--purple-mid)}
+.timeline-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.2rem;transition:border-color .2s,box-shadow .2s}
+.timeline-card:hover{border-color:var(--border-glow);box-shadow:var(--glow)}
+.event-type-badge{display:inline-block;background:var(--gold-dim);border:1px solid rgba(184,146,42,.3);color:var(--gold-soft);font-size:.67rem;padding:.1rem .45rem;border-radius:20px;letter-spacing:.03em;text-transform:uppercase}
+/* Drag reorder */
+.timeline-item.drag-over .timeline-card{border-color:var(--purple-vivid);box-shadow:0 0 12px rgba(154,111,245,.5)}
+.drag-handle{cursor:grab;color:var(--text-faint);padding:.1rem .3rem;font-size:.8rem;transition:color .15s}
+.drag-handle:hover{color:var(--purple-soft)}
+.drag-handle:active{cursor:grabbing}
+
+/* COMPENDIOS */
+.compendio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.3rem}
+.book-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;cursor:pointer;transition:transform .22s,box-shadow .22s;position:relative}
+.book-card:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:6px 8px 28px rgba(0,0,0,.6),0 0 18px rgba(107,69,200,.2)}
+.book-spine{position:absolute;left:0;top:0;bottom:0;width:7px;background:linear-gradient(to bottom,var(--purple-mid),var(--purple-dim))}
+.book-cover{padding:1.3rem 1rem 1rem 1.4rem;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
+.book-cover-img{width:100%;height:90px;object-fit:cover;border-radius:var(--r-sm);margin-bottom:.65rem}
+.book-title{font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;color:var(--text-bright);line-height:1.25;margin-bottom:.3rem}
+.book-desc{font-family:'EB Garamond',serif;font-style:italic;font-size:.78rem;color:var(--text-muted);line-height:1.45}
+.book-footer{padding:.5rem .9rem .5rem 1.3rem;background:var(--raised);border-top:1px solid var(--border);font-size:.67rem;color:var(--text-faint);display:flex;justify-content:space-between;align-items:center}
+
+/* FORO */
+.foro-wrap{max-width:820px}
+.foro-post{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:1.1rem;overflow:hidden;transition:border-color .2s;animation:fadeSlideIn .28s ease}
+.foro-post:hover{border-color:var(--border-glow)}
+.post-header{padding:.9rem 1.2rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.post-title{font-family:'Cinzel',serif;font-size:.98rem;color:var(--text-bright);margin-bottom:.2rem}
+.post-meta{font-size:.68rem;color:var(--text-faint)}
+.post-body{padding:0 1.2rem .75rem;font-family:'EB Garamond',serif;font-size:.94rem;line-height:1.62;color:var(--text-main)}
+.post-img{max-width:100%;max-height:280px;object-fit:cover;border-radius:var(--r-md);margin-top:.45rem;display:block}
+.post-footer{padding:.55rem 1.2rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.reply-count{font-size:.68rem;color:var(--text-faint);margin-left:auto}
+.respuestas-wrap{border-top:1px solid var(--border);background:var(--deep)}
+.respuesta-item{padding:.7rem 1.2rem .7rem 2rem;border-bottom:1px solid rgba(42,38,64,.4);position:relative;animation:fadeSlideIn .22s ease}
+.respuesta-item::before{content:'';position:absolute;left:.85rem;top:1.1rem;width:5px;height:5px;border-radius:50%;background:var(--purple-dim)}
+.resp-autor{font-size:.72rem;color:var(--purple-soft);font-weight:500;margin-bottom:.15rem}
+.resp-texto{font-family:'EB Garamond',serif;font-size:.91rem;color:var(--text-main);line-height:1.58}
+.resp-meta{font-size:.65rem;color:var(--text-faint);margin-top:.15rem}
+.resp-img{max-width:100%;max-height:180px;object-fit:cover;border-radius:var(--r-sm);margin-top:.3rem;display:block}
+.inline-reply{background:var(--surface);border-top:1px solid var(--border);padding:.8rem 1.2rem;display:none}
+.inline-reply.open{display:block;animation:fadeSlideIn .2s ease}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(7,8,11,.88);backdrop-filter:blur(7px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1.3rem;opacity:0;pointer-events:none;transition:opacity .28s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--deep);border:1px solid var(--border-glow);border-radius:var(--r-xl);box-shadow:0 0 36px rgba(107,69,200,.28),var(--shadow);width:100%;max-width:660px;max-height:88vh;overflow-y:auto;padding:1.8rem;position:relative;transform:scale(.95);transition:transform .28s}
+.modal-overlay.open .modal-box{transform:scale(1)}
+.modal-box.wide{max-width:820px}
+.modal-close{position:absolute;top:.9rem;right:.9rem;background:none;border:1px solid var(--border);color:var(--text-muted);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;transition:all .14s}
+.modal-close:hover{border-color:var(--danger);color:var(--danger-soft)}
+.modal-title{font-family:'Cinzel',serif;font-size:1.25rem;color:var(--purple-soft);margin-bottom:.4rem}
+.modal-subtitle{font-family:'EB Garamond',serif;font-style:italic;font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--border)}
+.modal-section-label{font-size:.68rem;color:var(--purple-mid);letter-spacing:.09em;text-transform:uppercase;margin:1rem 0 .4rem}
+.relato-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.8rem .95rem;cursor:pointer;transition:border-color .18s,background .18s;margin-bottom:.45rem}
+.relato-entry:hover{border-color:var(--purple-mid);background:var(--raised)}
+.relato-entry-title{font-family:'Cinzel',serif;font-size:.86rem;color:var(--text-bright);margin-bottom:.2rem}
+.relato-entry-tags{font-size:.67rem;color:var(--text-faint)}
+.reader-content{font-family:'EB Garamond',serif;font-size:1.06rem;line-height:1.85;color:var(--text-main)}
+.reader-content h1,.reader-content h2,.reader-content h3{font-family:'Cinzel',serif;color:var(--purple-soft);margin:1.1em 0 .4em}
+.reader-content p{margin:.55em 0}
+.reader-content em{color:var(--gold-soft)}
+.reader-content strong{color:var(--text-bright)}
+.reader-content blockquote{border-left:3px solid var(--purple-mid);padding-left:.9rem;color:var(--text-muted);font-style:italic;margin:1em 0}
+.reader-content hr{border:none;border-top:1px solid var(--border);margin:1.3em 0}
+.reader-content img{max-width:100%;border-radius:var(--r-md);margin:.4em 0}
+
+/* AUTH MODAL */
+.auth-modal .modal-box{max-width:360px;text-align:center}
+.auth-error{color:var(--danger-soft);font-size:.76rem;margin-top:.4rem;min-height:1.1em}
+
+/* TOAST */
+#toast-container{position:fixed;bottom:1.3rem;right:1.3rem;z-index:9999;display:flex;flex-direction:column;gap:.4rem}
+.toast{background:var(--raised);border:1px solid var(--border-glow);border-radius:var(--r-md);padding:.6rem 1rem;font-size:.78rem;color:var(--text-bright);box-shadow:var(--glow);animation:toastIn .28s ease;display:flex;align-items:center;gap:.45rem;max-width:270px}
+.toast.success i{color:#6fca8e}.toast.error i{color:var(--danger-soft)}.toast.info i{color:var(--purple-soft)}
+@keyframes toastIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0}}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(7,8,11,.82);z-index:1100;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .18s}
+.confirm-overlay.open{opacity:1;pointer-events:all}
+.confirm-box{background:var(--deep);border:1px solid var(--danger);border-radius:var(--r-lg);padding:1.4rem 1.7rem;max-width:320px;text-align:center}
+.confirm-box p{font-family:'EB Garamond',serif;font-size:.93rem;color:var(--text-main);margin-bottom:1.1rem}
+.confirm-actions{display:flex;gap:.55rem;justify-content:center}
+
+/* FOOTER */
+.site-footer{text-align:center;margin-top:4rem;padding-top:1.3rem;border-top:1px solid var(--border);font-size:.68rem;color:var(--text-faint);font-family:'EB Garamond',serif;font-style:italic}
+.site-footer strong{color:var(--purple-dim);font-style:normal}
+
+@media(max-width:600px){
+  .auth-bar{top:.8rem;right:.8rem}
+  .form-row{grid-template-columns:1fr}
+  .compendio-grid{grid-template-columns:1fr 1fr}
+  .modal-box{padding:1.3rem}
 }
-.md-preview h1,.md-preview h2,.md-preview h3 { font-family:'Cinzel',serif; color:var(--purple-soft); margin:0.5em 0; }
-.md-preview p { margin: 0.4em 0; }
-.md-preview em { color: var(--gold-soft); }
-.md-preview strong { color: var(--text-bright); }
-.md-preview blockquote { border-left: 3px solid var(--purple-mid); padding-left: 0.8rem; color: var(--text-muted); }
-.md-preview code { background: var(--surface); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.85em; }
-.md-preview hr { border-color: var(--border); margin: 0.8em 0; }
-
-/* Image upload area */
-.img-upload-area {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  color: var(--text-faint);
-  font-size: 0.82rem;
-}
-.img-upload-area:hover {
-  border-color: var(--purple-mid);
-  background: var(--purple-mist);
-  color: var(--purple-soft);
-}
-.img-upload-area i { display:block; font-size:1.4rem; margin-bottom:0.3rem; }
-.img-preview { max-width:100%; max-height:160px; border-radius:var(--radius-sm); display:none; margin-top:0.5rem; }
-
-/* ============================================================
-   TIMELINE
-============================================================ */
-.timeline-list {
-  position: relative;
-  padding-left: 2rem;
-}
-
-.timeline-list::before {
-  content: '';
-  position: absolute;
-  left: 0.7rem;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, var(--purple-mid), transparent);
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 1.5rem;
-  animation: fadeSlideIn 0.4s ease;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -1.65rem;
-  top: 0.6rem;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--purple-mid);
-  border: 2px solid var(--void);
-  box-shadow: 0 0 8px var(--purple-mid);
-}
-
-.timeline-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.1rem 1.3rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.timeline-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-glow);
-}
-
-.event-type-badge {
-  display: inline-block;
-  background: var(--gold-dim);
-  border: 1px solid rgba(184,146,42,0.3);
-  color: var(--gold-soft);
-  font-size: 0.68rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 20px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* ============================================================
-   COMPENDIOS (BOOK STYLE)
-============================================================ */
-.compendio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.5rem;
-}
-
-.book-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.25s, box-shadow 0.25s;
-  position: relative;
-}
-
-.book-card:hover {
-  transform: translateY(-4px) rotate(-0.5deg);
-  box-shadow: 8px 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(107,69,200,0.2);
-}
-
-.book-spine {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 8px;
-  background: linear-gradient(to bottom, var(--purple-mid), var(--purple-dim));
-}
-
-.book-cover {
-  padding: 1.5rem 1.2rem 1.2rem 1.6rem;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.book-cover-img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  margin-bottom: 0.8rem;
-}
-
-.book-title {
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-bright);
-  line-height: 1.3;
-  margin-bottom: 0.4rem;
-}
-
-.book-desc {
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.book-footer {
-  padding: 0.6rem 1rem 0.6rem 1.4rem;
-  background: var(--raised);
-  border-top: 1px solid var(--border);
-  font-size: 0.68rem;
-  color: var(--text-faint);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Book modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(7,8,11,0.9);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-
-.modal-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.modal-box {
-  background: var(--deep);
-  border: 1px solid var(--border-glow);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 0 40px rgba(107,69,200,0.3), var(--shadow-card);
-  width: 100%;
-  max-width: 680px;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 2rem;
-  position: relative;
-  transform: scale(0.95);
-  transition: transform 0.3s;
-}
-
-.modal-overlay.open .modal-box { transform: scale(1); }
-
-.modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-.modal-close:hover { border-color: var(--danger); color: var(--danger-soft); }
-
-.modal-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.3rem;
-  color: var(--purple-soft);
-  margin-bottom: 0.5rem;
-}
-
-.modal-subtitle {
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 1.2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-section-label {
-  font-size: 0.7rem;
-  color: var(--purple-mid);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin: 1rem 0 0.5rem;
-}
-
-.relato-list-in-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.relato-entry {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.9rem 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.relato-entry:hover {
-  border-color: var(--purple-mid);
-  background: var(--raised);
-}
-
-.relato-entry-title {
-  font-family: 'Cinzel', serif;
-  font-size: 0.88rem;
-  color: var(--text-bright);
-  margin-bottom: 0.25rem;
-}
-
-.relato-entry-tags { font-size: 0.68rem; color: var(--text-faint); }
-
-/* Relato reader */
-.reader-modal .modal-box {
-  max-width: 800px;
-  padding: 2.5rem 3rem;
-}
-
-.reader-content {
-  font-family: 'EB Garamond', serif;
-  font-size: 1.08rem;
-  line-height: 1.85;
-  color: var(--text-main);
-}
-.reader-content h1,.reader-content h2,.reader-content h3 {
-  font-family: 'Cinzel', serif;
-  color: var(--purple-soft);
-  margin: 1.2em 0 0.5em;
-}
-.reader-content p { margin: 0.6em 0; }
-.reader-content em { color: var(--gold-soft); }
-.reader-content strong { color: var(--text-bright); }
-.reader-content blockquote {
-  border-left: 3px solid var(--purple-mid);
-  padding-left: 1rem;
-  color: var(--text-muted);
-  font-style: italic;
-  margin: 1em 0;
-}
-.reader-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
-.reader-content img { max-width: 100%; border-radius: var(--radius-md); margin: 0.5em 0; }
-
-/* ============================================================
-   FORO
-============================================================ */
-.foro-container { max-width: 800px; }
-
-.foro-post {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  margin-bottom: 1.2rem;
-  overflow: hidden;
-  transition: border-color 0.2s;
-  animation: fadeSlideIn 0.3s ease;
-}
-
-.foro-post:hover { border-color: var(--border-glow); }
-
-.post-header {
-  padding: 1rem 1.3rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.post-header-left { flex: 1; }
-
-.post-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1rem;
-  color: var(--text-bright);
-  margin-bottom: 0.25rem;
-}
-
-.post-meta { font-size: 0.7rem; color: var(--text-faint); }
-
-.post-body {
-  padding: 0 1.3rem 0.8rem;
-  font-family: 'EB Garamond', serif;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--text-main);
-}
-
-.post-img { max-width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius-md); margin-top: 0.5rem; }
-
-.post-footer {
-  padding: 0.6rem 1.3rem;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.respuestas-section {
-  border-top: 1px solid var(--border);
-  background: var(--deep);
-}
-
-.respuesta-item {
-  padding: 0.8rem 1.3rem 0.8rem 2.3rem;
-  border-bottom: 1px solid rgba(42,38,64,0.5);
-  position: relative;
-  animation: fadeSlideIn 0.25s ease;
-}
-
-.respuesta-item::before {
-  content: '';
-  position: absolute;
-  left: 1rem;
-  top: 1.2rem;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--purple-dim);
-}
-
-.respuesta-autor {
-  font-size: 0.75rem;
-  color: var(--purple-soft);
-  font-weight: 500;
-  margin-bottom: 0.2rem;
-}
-
-.respuesta-texto {
-  font-family: 'EB Garamond', serif;
-  font-size: 0.92rem;
-  color: var(--text-main);
-  line-height: 1.6;
-}
-
-.respuesta-meta { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.2rem; }
-.respuesta-img { max-width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 0.4rem; }
-
-/* Inline reply form */
-.reply-form {
-  padding: 0.8rem 1.3rem;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  display: none;
-}
-
-.reply-form.open { display: block; animation: fadeSlideIn 0.2s ease; }
-
-/* ============================================================
-   AUTH MODAL
-============================================================ */
-.auth-modal .modal-box {
-  max-width: 380px;
-  text-align: center;
-}
-
-.auth-modal .modal-title { margin-bottom: 0.3rem; }
-.auth-modal .modal-subtitle { margin-bottom: 1.5rem; }
-
-.auth-field {
-  text-align: left;
-  margin-bottom: 0.8rem;
-}
-
-.auth-field label {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-}
-
-.auth-error {
-  color: var(--danger-soft);
-  font-size: 0.78rem;
-  margin-top: 0.5rem;
-  min-height: 1.2em;
-}
-
-/* ============================================================
-   NOTIFICATION TOAST
-============================================================ */
-#toast-container {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.toast {
-  background: var(--raised);
-  border: 1px solid var(--border-glow);
-  border-radius: var(--radius-md);
-  padding: 0.7rem 1.1rem;
-  font-size: 0.8rem;
-  color: var(--text-bright);
-  box-shadow: var(--shadow-glow);
-  animation: toastIn 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  max-width: 280px;
-}
-
-.toast.success i { color: #6fca8e; }
-.toast.error i { color: var(--danger-soft); }
-.toast.info i { color: var(--purple-soft); }
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes toastOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-
-/* ============================================================
-   FOOTER
-============================================================ */
-.site-footer {
-  text-align: center;
-  margin-top: 4rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.7rem;
-  color: var(--text-faint);
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-}
-
-.site-footer strong {
-  color: var(--purple-dim);
-  font-style: normal;
-}
-
-/* ============================================================
-   RESPONSIVE
-============================================================ */
-@media (max-width: 600px) {
-  .auth-bar { top: 1rem; right: 1rem; }
-  .reader-modal .modal-box { padding: 1.5rem; }
-  .form-row { grid-template-columns: 1fr; }
-  .compendio-grid { grid-template-columns: 1fr 1fr; }
-}
-
-/* ============================================================
-   PULSE ANIMATION for new items
-============================================================ */
-@keyframes pulseBorder {
-  0%   { box-shadow: 0 0 0 0 rgba(107,69,200,0.4); }
-  70%  { box-shadow: 0 0 0 6px rgba(107,69,200,0); }
-  100% { box-shadow: 0 0 0 0 rgba(107,69,200,0); }
-}
-
-.pulse { animation: pulseBorder 1s ease; }
-
-/* Personaje badge by rol */
-.rol-aliado { background: rgba(60,120,80,0.2); border-color: rgba(60,120,80,0.4); color: #7ec89a; }
-.rol-antagonista { background: rgba(120,40,40,0.2); border-color: rgba(120,40,40,0.4); color: #e07070; }
-.rol-neutral { background: var(--purple-mist); border-color: var(--border); color: var(--purple-soft); }
-
-/* Confirm dialog styling */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(7,8,11,0.85);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.confirm-overlay.open { opacity: 1; pointer-events: all; }
-.confirm-box {
-  background: var(--deep);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem 1.8rem;
-  max-width: 340px;
-  text-align: center;
-}
-.confirm-box p { font-family:'EB Garamond',serif; font-size:0.95rem; color:var(--text-main); margin-bottom:1.2rem; }
-.confirm-actions { display:flex; gap:0.6rem; justify-content:center; }
-
 </style>
 </head>
 <body>
 
-<!-- Starfield canvas -->
 <canvas id="starCanvas"></canvas>
-
-<!-- Audio context (initialized on first click) -->
 <div id="toast-container"></div>
 
 <!-- CONFIRM DIALOG -->
@@ -1122,9 +266,9 @@ select option { background: var(--surface); }
 <div class="modal-overlay auth-modal" id="authModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('authModal')"><i class="fas fa-times"></i></button>
-    <div class="header-sigil" style="margin:0 auto 1rem; opacity:1; animation:none;">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="30" stroke="#6b45c8" stroke-width="1.5" opacity="0.5"/>
+    <div style="margin:0 auto 1rem;width:52px;height:52px;">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 8px #6b45c8)">
+        <circle cx="32" cy="32" r="30" stroke="#6b45c8" stroke-width="1.5" opacity=".5"/>
         <polygon points="32,6 56,46 8,46" stroke="#9a6ff5" stroke-width="1.5" fill="none"/>
         <circle cx="32" cy="32" r="8" stroke="#b8922a" stroke-width="1" fill="none"/>
         <line x1="32" y1="6" x2="32" y2="24" stroke="#9a6ff5" stroke-width="1"/>
@@ -1133,25 +277,17 @@ select option { background: var(--surface); }
       </svg>
     </div>
     <div class="modal-title">Acceso al Archivo</div>
-    <div class="modal-subtitle">Solo el administrador puede modificar el contenido.</div>
-    <div class="auth-field">
-      <label>Correo</label>
-      <input type="email" id="authEmail" placeholder="correo@dominio.com">
-    </div>
-    <div class="auth-field">
-      <label>Contraseña</label>
-      <input type="password" id="authPassword" placeholder="••••••••">
-    </div>
+    <div class="modal-subtitle">Solo el administrador puede editar el contenido.</div>
+    <div class="form-group" style="text-align:left"><label>Correo</label><input type="email" id="authEmail" placeholder="correo@dominio.com"></div>
+    <div class="form-group" style="text-align:left"><label>Contraseña</label><input type="password" id="authPassword" placeholder="••••••••"></div>
     <div class="auth-error" id="authError"></div>
-    <button class="btn btn-primary" style="width:100%; margin-top:0.8rem; justify-content:center;" onclick="doLogin()">
-      <i class="fas fa-key"></i> Ingresar
-    </button>
+    <button class="btn btn-primary" style="width:100%;margin-top:.7rem;justify-content:center;" onclick="doLogin()"><i class="fas fa-key"></i> Ingresar</button>
   </div>
 </div>
 
-<!-- RELATO READER MODAL -->
-<div class="modal-overlay reader-modal" id="readerModal">
-  <div class="modal-box">
+<!-- READER MODAL -->
+<div class="modal-overlay" id="readerModal">
+  <div class="modal-box wide">
     <button class="modal-close" onclick="closeModal('readerModal')"><i class="fas fa-times"></i></button>
     <div id="readerContent"></div>
   </div>
@@ -1161,1362 +297,750 @@ select option { background: var(--surface); }
 <div class="modal-overlay" id="compendioModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('compendioModal')"><i class="fas fa-times"></i></button>
-    <div class="modal-title" id="compendioModalTitle"></div>
-    <div class="modal-subtitle" id="compendioModalDesc"></div>
+    <div class="modal-title" id="cmTitle"></div>
+    <div class="modal-subtitle" id="cmDesc"></div>
     <div class="modal-section-label">Relatos en este compendio</div>
-    <div class="relato-list-in-modal" id="compendioRelatosList"></div>
-    <div class="admin-only" id="compendioModalAdminActions" style="margin-top:1rem; display:none; flex-wrap:wrap; gap:0.5rem;">
-      <button class="btn btn-secondary btn-edit-compendio"><i class="fas fa-edit"></i> Editar</button>
-      <button class="btn btn-danger btn-delete-compendio"><i class="fas fa-trash"></i> Eliminar</button>
-    </div>
+    <div id="cmRelatos"></div>
+    <div id="cmAdminActions" style="display:none;margin-top:.9rem;gap:.4rem;flex-wrap:wrap"></div>
   </div>
 </div>
 
-<!-- PAGE WRAP -->
 <div class="page-wrap">
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="auth-bar">
-      <span id="userStatus"></span>
-      <button class="btn-ghost" id="loginBtn" onclick="openModal('authModal')"><i class="fas fa-key"></i> Admin</button>
-      <button class="btn-ghost" id="logoutBtn" style="display:none;" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
-    </div>
+<!-- HEADER -->
+<header class="site-header">
+  <div class="auth-bar">
+    <span id="userStatus"></span>
+    <button class="btn-ghost" id="loginBtn" onclick="openModal('authModal')"><i class="fas fa-key"></i> Admin</button>
+    <button class="btn-ghost" id="logoutBtn" style="display:none" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+  <div class="header-sigil">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="30" stroke="#6b45c8" stroke-width="1.5" opacity=".5"/>
+      <polygon points="32,6 56,46 8,46" stroke="#9a6ff5" stroke-width="1.5" fill="none"/>
+      <circle cx="32" cy="32" r="8" stroke="#b8922a" stroke-width="1" fill="none"/>
+      <line x1="32" y1="6" x2="32" y2="24" stroke="#9a6ff5" stroke-width="1"/>
+      <line x1="56" y1="46" x2="39" y2="38" stroke="#9a6ff5" stroke-width="1"/>
+      <line x1="8" y1="46" x2="25" y2="38" stroke="#9a6ff5" stroke-width="1"/>
+    </svg>
+  </div>
+  <h1 class="site-title">Kósmos en Apognōsei</h1>
+  <p class="site-tagline">Expediente completo · Velkaris N. Vaelstrum — <em>"Entender es dominar"</em></p>
+  <div class="header-divider"></div>
+</header>
 
-    <div class="header-sigil">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="30" stroke="#6b45c8" stroke-width="1.5" opacity="0.5"/>
-        <polygon points="32,6 56,46 8,46" stroke="#9a6ff5" stroke-width="1.5" fill="none"/>
-        <circle cx="32" cy="32" r="8" stroke="#b8922a" stroke-width="1" fill="none"/>
-        <line x1="32" y1="6" x2="32" y2="24" stroke="#9a6ff5" stroke-width="1"/>
-        <line x1="56" y1="46" x2="39" y2="38" stroke="#9a6ff5" stroke-width="1"/>
-        <line x1="8" y1="46" x2="25" y2="38" stroke="#9a6ff5" stroke-width="1"/>
-      </svg>
-    </div>
+<!-- NAV -->
+<nav class="nav-tabs">
+  <button class="tab-btn active" data-tab="timeline"><i class="fas fa-stream"></i> Línea de tiempo</button>
+  <button class="tab-btn" data-tab="personajes"><i class="fas fa-users"></i> Personajes</button>
+  <button class="tab-btn" data-tab="lugares"><i class="fas fa-map-marked-alt"></i> Lugares</button>
+  <button class="tab-btn" data-tab="relatos"><i class="fas fa-feather-alt"></i> Relatos</button>
+  <button class="tab-btn" data-tab="compendios"><i class="fas fa-book"></i> Compendios</button>
+  <button class="tab-btn" data-tab="foro"><i class="fas fa-comments"></i> Foro</button>
+</nav>
 
-    <h1 class="site-title">Kósmos en Apognōsei</h1>
-    <p class="site-tagline">Expediente completo · Velkaris N. Vaelstrum — <em>"Entender es dominar"</em></p>
-    <div class="header-divider"></div>
-  </header>
-
-  <!-- NAV -->
-  <nav class="nav-tabs" id="mainTabs">
-    <button class="tab-btn active" data-tab="timeline"><i class="fas fa-stream"></i> Línea de tiempo</button>
-    <button class="tab-btn" data-tab="personajes"><i class="fas fa-users"></i> Personajes</button>
-    <button class="tab-btn" data-tab="lugares"><i class="fas fa-map-marked-alt"></i> Lugares</button>
-    <button class="tab-btn" data-tab="relatos"><i class="fas fa-feather-alt"></i> Relatos</button>
-    <button class="tab-btn" data-tab="compendios"><i class="fas fa-book"></i> Compendios</button>
-    <button class="tab-btn" data-tab="foro"><i class="fas fa-comments"></i> Foro</button>
-  </nav>
-
-  <!-- ============================
-       TIMELINE
-  ============================= -->
-  <div id="timeline" class="tab-content active">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-stream"></i> Eventos clave</div>
-      <div class="admin-only">
-        <button class="btn btn-primary" onclick="showForm('eventForm')"><i class="fas fa-plus"></i> Nuevo evento</button>
-      </div>
-    </div>
-
-    <!-- Form -->
-    <div id="eventForm" class="form-panel admin-only" style="display:none;">
-      <h4><i class="fas fa-edit"></i> Registrar evento</h4>
-      <input type="hidden" id="eventId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Título</label>
-          <input type="text" id="eventTitle" placeholder="Nombre del evento">
-        </div>
-        <div class="form-group">
-          <label>Fecha / Época</label>
-          <input type="text" id="eventDate" placeholder="Ej: Año 3, Ciclo II">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Tipo de evento</label>
-          <select id="eventType">
-            <option value="origen">Origen</option>
-            <option value="tragedia">Tragedia</option>
-            <option value="descubrimiento">Descubrimiento</option>
-            <option value="encuentro">Encuentro</option>
-            <option value="transformacion">Transformación</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Imagen (opcional)</label>
-          <div class="img-upload-area" onclick="document.getElementById('eventImg').click()">
-            <i class="fas fa-image"></i> Subir imagen
-          </div>
-          <input type="file" id="eventImg" accept="image/*" style="display:none;" onchange="previewImage(this,'eventImgPreview')">
-          <img id="eventImgPreview" class="img-preview">
-          <input type="hidden" id="eventImgData">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <textarea id="eventDesc" placeholder="Describe el evento..."></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="saveEvent()"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-secondary" onclick="hideForm('eventForm')"><i class="fas fa-times"></i> Cancelar</button>
-      </div>
-    </div>
-
-    <div class="timeline-list" id="timelineContainer">
-      <div class="empty-state"><i class="fas fa-hourglass-half"></i> Cargando eventos...</div>
+<!-- ========== TIMELINE ========== -->
+<div id="timeline" class="tab-content active">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-stream"></i> Eventos clave</div>
+    <div class="admin-action-row" id="adminTimeline">
+      <button class="btn btn-primary" onclick="showForm('eventForm')"><i class="fas fa-plus"></i> Nuevo evento</button>
     </div>
   </div>
-
-  <!-- ============================
-       PERSONAJES
-  ============================= -->
-  <div id="personajes" class="tab-content">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-users"></i> Personajes</div>
-      <div class="admin-only">
-        <button class="btn btn-primary" onclick="showForm('personajeForm')"><i class="fas fa-plus"></i> Nuevo personaje</button>
+  <div id="eventForm" class="form-panel" style="display:none">
+    <h4><i class="fas fa-edit"></i> Registrar evento</h4>
+    <input type="hidden" id="eventId">
+    <div class="form-row">
+      <div class="form-group"><label>Título</label><input type="text" id="eventTitle" placeholder="Nombre del evento"></div>
+      <div class="form-group"><label>Fecha / Época</label><input type="text" id="eventDate" placeholder="Ej: Año 3, Ciclo II"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de evento</label>
+        <select id="eventType">
+          <option value="origen">Origen</option><option value="tragedia">Tragedia</option>
+          <option value="descubrimiento">Descubrimiento</option><option value="encuentro">Encuentro</option>
+          <option value="transformacion">Transformación</option><option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Posición en línea (número)</label>
+        <input type="text" id="eventOrder" placeholder="Ej: 1, 2, 3...">
       </div>
     </div>
-
-    <div id="personajeForm" class="form-panel admin-only" style="display:none;">
-      <h4><i class="fas fa-edit"></i> Registrar personaje</h4>
-      <input type="hidden" id="personajeId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" id="personajeNombre" placeholder="Nombre completo">
-        </div>
-        <div class="form-group">
-          <label>Rol</label>
-          <select id="personajeRol">
-            <option value="aliado">Aliado</option>
-            <option value="antagonista">Antagonista</option>
-            <option value="neutral">Neutral</option>
-            <option value="desconocido">Desconocido</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Imagen del personaje</label>
-        <div class="img-upload-area" onclick="document.getElementById('personajeImg').click()">
-          <i class="fas fa-portrait"></i> Subir imagen
-        </div>
-        <input type="file" id="personajeImg" accept="image/*" style="display:none;" onchange="previewImage(this,'personajeImgPreview')">
-        <img id="personajeImgPreview" class="img-preview">
-        <input type="hidden" id="personajeImgData">
-      </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <textarea id="personajeDesc" placeholder="Historia, rasgos, motivaciones..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Relaciones (nombres separados por coma)</label>
-        <input type="text" id="personajeRelaciones" placeholder="Ej: Vaelstrum, Rhael...">
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="savePersonaje()"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-secondary" onclick="hideForm('personajeForm')"><i class="fas fa-times"></i> Cancelar</button>
-      </div>
+    <div class="form-group"><label>Descripción</label><textarea id="eventDesc" placeholder="Describe el evento..."></textarea></div>
+    <div class="form-group">
+      <label>Imagen (opcional)</label>
+      <div class="img-upload-area" onclick="document.getElementById('eventImg').click()"><i class="fas fa-image"></i> Subir imagen</div>
+      <input type="file" id="eventImg" accept="image/*" style="display:none" onchange="handleImg(this,'eventImgPrev','eventImgData')">
+      <img id="eventImgPrev" class="img-preview-thumb"><input type="hidden" id="eventImgData">
     </div>
-
-    <div class="card-grid" id="personajesContainer">
-      <div class="empty-state"><i class="fas fa-user-circle"></i> Cargando personajes...</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveEvent()"><i class="fas fa-save"></i> Guardar</button>
+      <button class="btn btn-secondary" onclick="hideForm('eventForm');clearEventForm()"><i class="fas fa-times"></i> Cancelar</button>
     </div>
   </div>
+  <div class="timeline-list" id="timelineContainer"><div class="empty-state"><i class="fas fa-hourglass-half"></i> Cargando eventos...</div></div>
+</div>
 
-  <!-- ============================
-       LUGARES
-  ============================= -->
-  <div id="lugares" class="tab-content">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-map-marked-alt"></i> Lugares</div>
-      <div class="admin-only">
-        <button class="btn btn-primary" onclick="showForm('lugarForm')"><i class="fas fa-plus"></i> Nuevo lugar</button>
-      </div>
-    </div>
-
-    <div id="lugarForm" class="form-panel admin-only" style="display:none;">
-      <h4><i class="fas fa-edit"></i> Registrar lugar</h4>
-      <input type="hidden" id="lugarId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" id="lugarNombre" placeholder="Nombre del lugar">
-        </div>
-        <div class="form-group">
-          <label>Tipo</label>
-          <select id="lugarTipo">
-            <option value="ciudad">Ciudad</option>
-            <option value="reino">Reino</option>
-            <option value="ruina">Ruina</option>
-            <option value="dimension">Dimensión</option>
-            <option value="bosque">Bosque</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Imagen</label>
-        <div class="img-upload-area" onclick="document.getElementById('lugarImg').click()">
-          <i class="fas fa-mountain"></i> Subir imagen
-        </div>
-        <input type="file" id="lugarImg" accept="image/*" style="display:none;" onchange="previewImage(this,'lugarImgPreview')">
-        <img id="lugarImgPreview" class="img-preview">
-        <input type="hidden" id="lugarImgData">
-      </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <textarea id="lugarDesc" placeholder="Describe el lugar..."></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="saveLugar()"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-secondary" onclick="hideForm('lugarForm')"><i class="fas fa-times"></i> Cancelar</button>
-      </div>
-    </div>
-
-    <div class="card-grid" id="lugaresContainer">
-      <div class="empty-state"><i class="fas fa-compass"></i> Cargando lugares...</div>
+<!-- ========== PERSONAJES ========== -->
+<div id="personajes" class="tab-content">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-users"></i> Personajes</div>
+    <div class="admin-action-row" id="adminPersonajes">
+      <button class="btn btn-primary" onclick="showForm('personajeForm')"><i class="fas fa-plus"></i> Nuevo personaje</button>
     </div>
   </div>
-
-  <!-- ============================
-       RELATOS
-  ============================= -->
-  <div id="relatos" class="tab-content">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-feather-alt"></i> Relatos</div>
-      <div class="admin-only">
-        <button class="btn btn-primary" onclick="showForm('relatoForm')"><i class="fas fa-plus"></i> Nuevo relato</button>
-      </div>
-    </div>
-
-    <div id="relatoForm" class="form-panel admin-only" style="display:none;">
-      <h4><i class="fas fa-edit"></i> Escribir relato</h4>
-      <input type="hidden" id="relatoId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Título</label>
-          <input type="text" id="relatoTitulo" placeholder="Título del relato">
-        </div>
-        <div class="form-group">
-          <label>Etiquetas (separadas por coma)</label>
-          <input type="text" id="relatoEtiquetas" placeholder="Ej: memoria, bosque, soledad">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Compendio</label>
-          <select id="relatoCompendio">
-            <option value="">— Sin compendio —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Imagen de portada</label>
-          <div class="img-upload-area" onclick="document.getElementById('relatoImg').click()">
-            <i class="fas fa-image"></i> Subir imagen
-          </div>
-          <input type="file" id="relatoImg" accept="image/*" style="display:none;" onchange="previewImage(this,'relatoImgPreview')">
-          <img id="relatoImgPreview" class="img-preview">
-          <input type="hidden" id="relatoImgData">
-        </div>
-      </div>
+  <div id="personajeForm" class="form-panel" style="display:none">
+    <h4><i class="fas fa-edit"></i> Registrar personaje</h4>
+    <input type="hidden" id="personajeId">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="personajeNombre" placeholder="Nombre completo"></div>
       <div class="form-group">
-        <label>Contenido (Markdown)</label>
-        <textarea id="relatoContenido" placeholder="Escribe tu relato en Markdown..." style="min-height:200px;"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Vista previa</label>
-        <div class="md-preview" id="markdownPreview"><em>La vista previa aparecerá aquí...</em></div>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="saveRelato()"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-secondary" onclick="hideForm('relatoForm')"><i class="fas fa-times"></i> Cancelar</button>
+        <label>Rol</label>
+        <select id="personajeRol">
+          <option value="aliado">Aliado</option><option value="antagonista">Antagonista</option>
+          <option value="neutral">Neutral</option><option value="desconocido">Desconocido</option>
+        </select>
       </div>
     </div>
-
-    <!-- Filtro por etiqueta -->
-    <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-      <span style="font-size:0.72rem; color:var(--text-faint); letter-spacing:0.05em;">FILTRAR</span>
-      <div id="relatoTagFilter" style="display:flex; gap:0.4rem; flex-wrap:wrap;"></div>
-      <button class="btn-icon-sm" id="clearTagFilter" style="display:none;" onclick="clearTagFilter()"><i class="fas fa-times"></i> Limpiar</button>
+    <div class="form-group">
+      <label>Imagen del personaje</label>
+      <div class="img-upload-area" onclick="document.getElementById('personajeImg').click()"><i class="fas fa-portrait"></i> Subir imagen</div>
+      <input type="file" id="personajeImg" accept="image/*" style="display:none" onchange="handleImg(this,'personajeImgPrev','personajeImgData')">
+      <img id="personajeImgPrev" class="img-preview-thumb"><input type="hidden" id="personajeImgData">
     </div>
-
-    <div class="card-grid" id="relatosContainer">
-      <div class="empty-state"><i class="fas fa-scroll"></i> Cargando relatos...</div>
+    <div class="form-group"><label>Descripción / Historia</label><textarea id="personajeDesc" placeholder="Historia, rasgos, motivaciones..."></textarea></div>
+    <div class="form-group"><label>Habilidades</label><textarea id="personajeHabilidades" placeholder="Habilidades especiales, poderes, conocimientos..." style="min-height:60px"></textarea></div>
+    <div class="form-group">
+      <label>Conexiones con otros personajes</label>
+      <div class="conn-list" id="connList"></div>
+      <button class="btn-add-conn" onclick="addConn()"><i class="fas fa-plus" style="margin-right:.3rem"></i> Agregar conexión</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="savePersonaje()"><i class="fas fa-save"></i> Guardar</button>
+      <button class="btn btn-secondary" onclick="hideForm('personajeForm');clearPersonajeForm()"><i class="fas fa-times"></i> Cancelar</button>
     </div>
   </div>
+  <div class="card-grid" id="personajesContainer"><div class="empty-state"><i class="fas fa-user-circle"></i> Cargando personajes...</div></div>
+</div>
 
-  <!-- ============================
-       COMPENDIOS (libros)
-  ============================= -->
-  <div id="compendios" class="tab-content">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-book"></i> Compendios</div>
-      <div class="admin-only">
-        <button class="btn btn-primary" onclick="showForm('compendioForm')"><i class="fas fa-plus"></i> Nuevo compendio</button>
-      </div>
-    </div>
-
-    <div id="compendioForm" class="form-panel admin-only" style="display:none;">
-      <h4><i class="fas fa-edit"></i> Crear compendio</h4>
-      <input type="hidden" id="compendioId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre del compendio</label>
-          <input type="text" id="compendioNombre" placeholder="Ej: Relatos del Bosque Silente">
-        </div>
-        <div class="form-group">
-          <label>Portada del libro</label>
-          <div class="img-upload-area" onclick="document.getElementById('compendioImg').click()">
-            <i class="fas fa-book-open"></i> Subir portada
-          </div>
-          <input type="file" id="compendioImg" accept="image/*" style="display:none;" onchange="previewImage(this,'compendioImgPreview')">
-          <img id="compendioImgPreview" class="img-preview">
-          <input type="hidden" id="compendioImgData">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <textarea id="compendioDesc" placeholder="¿Qué contiene este compendio? ¿Qué época o lugar abarca?"></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="saveCompendio()"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-secondary" onclick="hideForm('compendioForm')"><i class="fas fa-times"></i> Cancelar</button>
-      </div>
-    </div>
-
-    <div class="compendio-grid" id="compendiosContainer">
-      <div class="empty-state"><i class="fas fa-book-open"></i> Cargando compendios...</div>
+<!-- ========== LUGARES ========== -->
+<div id="lugares" class="tab-content">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-map-marked-alt"></i> Lugares</div>
+    <div class="admin-action-row" id="adminLugares">
+      <button class="btn btn-primary" onclick="showForm('lugarForm')"><i class="fas fa-plus"></i> Nuevo lugar</button>
     </div>
   </div>
-
-  <!-- ============================
-       FORO
-  ============================= -->
-  <div id="foro" class="tab-content">
-    <div class="section-header">
-      <div class="section-title"><i class="fas fa-comments"></i> Foro de Teorías</div>
-      <button class="btn btn-primary" onclick="toggleReplyForm('newPostForm')"><i class="fas fa-plus"></i> Nueva publicación</button>
-    </div>
-
-    <!-- New post form -->
-    <div id="newPostForm" class="form-panel" style="display:none; margin-bottom:1.5rem;">
-      <h4><i class="fas fa-edit"></i> Nueva publicación</h4>
+  <div id="lugarForm" class="form-panel" style="display:none">
+    <h4><i class="fas fa-edit"></i> Registrar lugar</h4>
+    <input type="hidden" id="lugarId">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="lugarNombre" placeholder="Nombre del lugar"></div>
       <div class="form-group">
-        <label>Título</label>
-        <input type="text" id="postTitulo" placeholder="¿Sobre qué quieres teorizar?">
-      </div>
-      <div class="form-group">
-        <label>Contenido</label>
-        <textarea id="postContenido" placeholder="Escribe tu publicación..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Tu nombre</label>
-        <input type="text" id="postAutor" placeholder="Anónimo">
-      </div>
-      <div class="form-group">
-        <label>Imagen (opcional)</label>
-        <div class="img-upload-area" onclick="document.getElementById('postImg').click()">
-          <i class="fas fa-image"></i> Adjuntar imagen
-        </div>
-        <input type="file" id="postImg" accept="image/*" style="display:none;" onchange="previewImage(this,'postImgPreview')">
-        <img id="postImgPreview" class="img-preview">
-        <input type="hidden" id="postImgData">
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="savePost()"><i class="fas fa-paper-plane"></i> Publicar</button>
-        <button class="btn btn-secondary" onclick="hideForm('newPostForm')"><i class="fas fa-times"></i> Cancelar</button>
+        <label>Tipo</label>
+        <select id="lugarTipo">
+          <option value="ciudad">Ciudad</option><option value="reino">Reino</option>
+          <option value="ruina">Ruina</option><option value="dimension">Dimensión</option>
+          <option value="bosque">Bosque</option><option value="templo">Templo</option>
+          <option value="fortaleza">Fortaleza</option><option value="otro">Otro</option>
+        </select>
       </div>
     </div>
-
-    <div class="foro-container" id="foroContainer">
-      <div class="empty-state"><i class="fas fa-comments"></i> Cargando publicaciones...</div>
+    <div class="form-group">
+      <label>Imagen</label>
+      <div class="img-upload-area" onclick="document.getElementById('lugarImg').click()"><i class="fas fa-mountain"></i> Subir imagen</div>
+      <input type="file" id="lugarImg" accept="image/*" style="display:none" onchange="handleImg(this,'lugarImgPrev','lugarImgData')">
+      <img id="lugarImgPrev" class="img-preview-thumb"><input type="hidden" id="lugarImgData">
+    </div>
+    <div class="form-group"><label>Descripción general</label><textarea id="lugarDesc" placeholder="Descripción del lugar..."></textarea></div>
+    <!-- Campos especiales según tipo -->
+    <div class="form-row">
+      <div class="form-group"><label>Gobierno / Organización</label><input type="text" id="lugarGobierno" placeholder="Ej: Monarquía absoluta, Anarquía..."></div>
+      <div class="form-group"><label>Habitantes / Población</label><input type="text" id="lugarPoblacion" placeholder="Ej: 40,000 almas, desconocido..."></div>
+    </div>
+    <div class="form-group"><label>Historia / Origen</label><textarea id="lugarHistoria" placeholder="¿Cómo nació este lugar? ¿Qué eventos lo marcaron?" style="min-height:70px"></textarea></div>
+    <div class="form-group"><label>Características especiales</label><textarea id="lugarEspecial" placeholder="Magia, anomalías, secretos, arquitectura..." style="min-height:60px"></textarea></div>
+    <div class="form-group">
+      <label>Estado político / Alianzas</label>
+      <div class="politics-list" id="politicsList"></div>
+      <button class="btn-add-conn" onclick="addPolitics()"><i class="fas fa-plus" style="margin-right:.3rem"></i> Agregar relación política</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveLugar()"><i class="fas fa-save"></i> Guardar</button>
+      <button class="btn btn-secondary" onclick="hideForm('lugarForm');clearLugarForm()"><i class="fas fa-times"></i> Cancelar</button>
     </div>
   </div>
+  <div class="card-grid" id="lugaresContainer"><div class="empty-state"><i class="fas fa-compass"></i> Cargando lugares...</div></div>
+</div>
 
-</div><!-- end page-wrap -->
+<!-- ========== RELATOS ========== -->
+<div id="relatos" class="tab-content">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-feather-alt"></i> Relatos</div>
+    <div class="admin-action-row" id="adminRelatos">
+      <button class="btn btn-primary" onclick="showForm('relatoForm')"><i class="fas fa-plus"></i> Nuevo relato</button>
+    </div>
+  </div>
+  <div id="relatoForm" class="form-panel" style="display:none">
+    <h4><i class="fas fa-edit"></i> Escribir relato</h4>
+    <input type="hidden" id="relatoId">
+    <div class="form-row">
+      <div class="form-group"><label>Título</label><input type="text" id="relatoTitulo" placeholder="Título del relato"></div>
+      <div class="form-group"><label>Etiquetas (coma)</label><input type="text" id="relatoEtiquetas" placeholder="Ej: memoria, bosque, soledad"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Compendio</label><select id="relatoCompendio"><option value="">— Sin compendio —</option></select></div>
+      <div class="form-group">
+        <label>Imagen de portada</label>
+        <div class="img-upload-area" onclick="document.getElementById('relatoImg').click()"><i class="fas fa-image"></i> Subir imagen</div>
+        <input type="file" id="relatoImg" accept="image/*" style="display:none" onchange="handleImg(this,'relatoImgPrev','relatoImgData')">
+        <img id="relatoImgPrev" class="img-preview-thumb"><input type="hidden" id="relatoImgData">
+      </div>
+    </div>
+    <div class="form-group"><label>Contenido (Markdown)</label><textarea id="relatoContenido" placeholder="Escribe tu relato..." style="min-height:200px"></textarea></div>
+    <div class="form-group"><label>Vista previa</label><div class="md-preview" id="markdownPreview"><em>La vista previa aparecerá aquí...</em></div></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveRelato()"><i class="fas fa-save"></i> Guardar</button>
+      <button class="btn btn-secondary" onclick="hideForm('relatoForm');clearRelatoForm()"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+  </div>
+  <div style="margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+    <span style="font-size:.68rem;color:var(--text-faint);letter-spacing:.05em">FILTRAR</span>
+    <div id="relatoTagFilter" style="display:flex;gap:.3rem;flex-wrap:wrap"></div>
+    <button class="btn btn-secondary btn-sm" id="clearTagFilter" style="display:none" onclick="clearTagFilter()"><i class="fas fa-times"></i> Limpiar</button>
+  </div>
+  <div class="card-grid" id="relatosContainer"><div class="empty-state"><i class="fas fa-scroll"></i> Cargando relatos...</div></div>
+</div>
+
+<!-- ========== COMPENDIOS ========== -->
+<div id="compendios" class="tab-content">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-book"></i> Compendios</div>
+    <div class="admin-action-row" id="adminCompendios">
+      <button class="btn btn-primary" onclick="showForm('compendioForm')"><i class="fas fa-plus"></i> Nuevo compendio</button>
+    </div>
+  </div>
+  <div id="compendioForm" class="form-panel" style="display:none">
+    <h4><i class="fas fa-edit"></i> Crear compendio</h4>
+    <input type="hidden" id="compendioId">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="compendioNombre" placeholder="Ej: Relatos del Bosque Silente"></div>
+      <div class="form-group">
+        <label>Portada</label>
+        <div class="img-upload-area" onclick="document.getElementById('compendioImg').click()"><i class="fas fa-book-open"></i> Subir portada</div>
+        <input type="file" id="compendioImg" accept="image/*" style="display:none" onchange="handleImg(this,'compendioImgPrev','compendioImgData')">
+        <img id="compendioImgPrev" class="img-preview-thumb"><input type="hidden" id="compendioImgData">
+      </div>
+    </div>
+    <div class="form-group"><label>Descripción</label><textarea id="compendioDesc" placeholder="¿Qué contiene? ¿Qué época o lugar abarca?"></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveCompendio()"><i class="fas fa-save"></i> Guardar</button>
+      <button class="btn btn-secondary" onclick="hideForm('compendioForm');clearCompendioForm()"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+  </div>
+  <div class="compendio-grid" id="compendiosContainer"><div class="empty-state" style="grid-column:1/-1"><i class="fas fa-book-open"></i> Cargando compendios...</div></div>
+</div>
+
+<!-- ========== FORO ========== -->
+<div id="foro" class="tab-content">
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-comments"></i> Foro de Teorías</div>
+    <button class="btn btn-primary" onclick="toggleEl('newPostForm')"><i class="fas fa-plus"></i> Nueva publicación</button>
+  </div>
+  <div id="newPostForm" class="form-panel" style="display:none;max-width:820px">
+    <h4><i class="fas fa-edit"></i> Nueva publicación</h4>
+    <div class="form-group"><label>Título</label><input type="text" id="postTitulo" placeholder="¿Sobre qué quieres teorizar?"></div>
+    <div class="form-group"><label>Contenido</label><textarea id="postContenido" placeholder="Escribe tu publicación..."></textarea></div>
+    <div class="form-group"><label>Tu nombre</label><input type="text" id="postAutor" placeholder="Anónimo"></div>
+    <div class="form-group">
+      <label>Imagen (opcional)</label>
+      <div class="img-upload-area" onclick="document.getElementById('postImg').click()"><i class="fas fa-image"></i> Adjuntar imagen</div>
+      <input type="file" id="postImg" accept="image/*" style="display:none" onchange="handleImg(this,'postImgPrev','postImgData')">
+      <img id="postImgPrev" class="img-preview-thumb"><input type="hidden" id="postImgData">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="savePost()"><i class="fas fa-paper-plane"></i> Publicar</button>
+      <button class="btn btn-secondary" onclick="hideForm('newPostForm')"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+  </div>
+  <div class="foro-wrap" id="foroContainer"><div class="empty-state"><i class="fas fa-comments"></i> Cargando publicaciones...</div></div>
+</div>
+
+</div><!-- page-wrap -->
 
 <footer class="site-footer">
-  <strong>Kósmos en Apognōsei</strong> · Velkaris N. Vaelstrum · Firebase Realtime Database
-  <br><em>"El error es información. La ignorancia, un estado. La comprensión, poder."</em>
+  <strong>Kósmos en Apognōsei</strong> · Velkaris N. Vaelstrum · Firebase Realtime Database<br>
+  <em>"El error es información. La ignorancia, un estado. La comprensión, poder."</em>
 </footer>
 
-<!-- ============================================================
-     SCRIPTS
-============================================================ -->
 <script>
-/* ============================================================
-   FIREBASE CONFIG
-============================================================ */
-const firebaseConfig = {
-  apiKey: "AIzaSyDo7ebAVDvYEjPDscivWWKXLUoGEAGBeIM",
-  authDomain: "thenewwest-7eb5f.firebaseapp.com",
-  databaseURL: "https://thenewwest-7eb5f-default-rtdb.firebaseio.com",
-  projectId: "thenewwest-7eb5f",
-  storageBucket: "thenewwest-7eb5f.firebasestorage.app",
-  messagingSenderId: "605270552271",
-  appId: "1:605270552271:web:a58b5b7f619e5804d7d1ba"
-};
-
+/* ============================================================  FIREBASE  */
+const firebaseConfig={apiKey:"AIzaSyDo7ebAVDvYEjPDscivWWKXLUoGEAGBeIM",authDomain:"thenewwest-7eb5f.firebaseapp.com",databaseURL:"https://thenewwest-7eb5f-default-rtdb.firebaseio.com",projectId:"thenewwest-7eb5f",storageBucket:"thenewwest-7eb5f.firebasestorage.app",messagingSenderId:"605270552271",appId:"1:605270552271:web:a58b5b7f619e5804d7d1ba"};
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const auth = firebase.auth();
+const db=firebase.database(),auth=firebase.auth();
+const ADMIN_UID="Exc2X3Gy1ac92a9Yz0H5s2t4r412";
+const loreRef=db.ref('lore/velkaris');
+const foroPostsRef=db.ref('pre_registros/foro_posts');
+const foroRespRef=db.ref('pre_registros/foro_respuestas');
 
-const ADMIN_UID = "Exc2X3Gy1ac92a9Yz0H5s2t4r412";
-const loreRef = database.ref('lore/velkaris');
-const foroPostsRef = database.ref('pre_registros/foro_posts');
-const foroRespuestasRef = database.ref('pre_registros/foro_respuestas');
+let currentUser=null,isAdmin=false;
+let allRelatos=[],allCompendios=[],allRespuestas=[];
+let activeTag=null,activeCompendioId=null,confirmResolve=null;
+/* Conexiones temporales en forms */
+let tempConns=[],tempPolitics=[];
 
-let currentUser = null;
-let isAdmin = false;
-let allRelatos = [];
-let allCompendios = [];
-let allRespuestas = [];
-let activeTagFilter = null;
-let activeCompendioId = null;
-let confirmResolve = null;
+/* ============================================================  AUDIO  */
+let audioCtx=null;
+function getACtx(){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}return audioCtx;}
+function playClick(){const c=getACtx();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.setValueAtTime(820,c.currentTime);o.frequency.exponentialRampToValueAtTime(410,c.currentTime+.08);g.gain.setValueAtTime(.055,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.09);o.start();o.stop(c.currentTime+.09);}
+function playHover(){const c=getACtx();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=640;g.gain.setValueAtTime(.018,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.05);o.start();o.stop(c.currentTime+.05);}
+function playOk(){const c=getACtx();if(!c)return;[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.055,c.currentTime+i*.1);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.1+.14);o.start(c.currentTime+i*.1);o.stop(c.currentTime+i*.1+.14);});}
+document.addEventListener('click',e=>{if(e.target.closest('button,.book-card,.relato-entry,.card.clickable'))playClick();},true);
+document.addEventListener('mouseover',e=>{if(e.target.matches('.tab-btn,.book-card'))playHover();},true);
 
-/* ============================================================
-   AUDIO — Click & Hover sounds using Web Audio API
-============================================================ */
-let audioCtx = null;
+/* ============================================================  STARFIELD  */
+(()=>{const cv=document.getElementById('starCanvas'),ctx=cv.getContext('2d');let st=[];
+function rsz(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
+function init(){st=Array.from({length:110},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.2,a:Math.random(),da:(Math.random()-.5)*.004,sp:Math.random()*.045+.008}));}
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);st.forEach(s=>{s.a+=s.da;if(s.a>1||s.a<.08)s.da*=-1;s.y+=s.sp;if(s.y>cv.height)s.y=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,155,255,${s.a*.65})`;ctx.fill();});requestAnimationFrame(draw);}
+rsz();init();draw();window.addEventListener('resize',()=>{rsz();init();});})();
 
-function getAudioCtx() {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  return audioCtx;
-}
+/* ============================================================  UTILS  */
+function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function toast(msg,type='info',dur=3200){const icons={success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'};const el=document.createElement('div');el.className=`toast ${type}`;el.innerHTML=`<i class="fas ${icons[type]}"></i><span>${msg}</span>`;document.getElementById('toast-container').appendChild(el);setTimeout(()=>{el.style.animation='toastOut .28s ease forwards';setTimeout(()=>el.remove(),280);},dur);}
+function showForm(id){const el=document.getElementById(id);if(el){el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'nearest'});}}
+function hideForm(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function toggleEl(id){const el=document.getElementById(id);if(!el)return;const open=el.style.display!=='none'&&el.style.display!=='';el.style.display=open?'none':'block';if(!open)el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+function fmtDate(ts){if(!ts)return'';return new Date(ts).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 
-function playClick() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine';
-  o.frequency.setValueAtTime(880, ctx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
-  g.gain.setValueAtTime(0.06, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-  o.start(); o.stop(ctx.currentTime + 0.1);
-}
+function confirmDialog(msg){return new Promise(res=>{confirmResolve=res;document.getElementById('confirmMsg').textContent=msg||'¿Estás seguro?';document.getElementById('confirmOverlay').classList.add('open');});}
+document.getElementById('confirmYes').onclick=()=>{document.getElementById('confirmOverlay').classList.remove('open');if(confirmResolve){confirmResolve(true);confirmResolve=null;}};
+document.getElementById('confirmNo').onclick=()=>{document.getElementById('confirmOverlay').classList.remove('open');if(confirmResolve){confirmResolve(false);confirmResolve=null;}};
 
-function playHover() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine';
-  o.frequency.setValueAtTime(660, ctx.currentTime);
-  g.gain.setValueAtTime(0.02, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-  o.start(); o.stop(ctx.currentTime + 0.05);
-}
+/* ============================================================  IMAGE HANDLING  */
+function handleImg(input,prevId,hiddenId){const file=input.files[0];if(!file)return;const rd=new FileReader();rd.onload=e=>{compressImg(e.target.result,800,.75,comp=>{const h=document.getElementById(hiddenId);if(h)h.value=comp;const p=document.getElementById(prevId);if(p){p.src=comp;p.style.display='block';}});};rd.readAsDataURL(file);}
+function compressImg(dataUrl,maxW,q,cb){const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);cb(cv.toDataURL('image/jpeg',q));};img.src=dataUrl;}
+function clearImg(prevId,hiddenId){const p=document.getElementById(prevId),h=document.getElementById(hiddenId);if(p){p.src='';p.style.display='none';}if(h)h.value='';}
 
-function playSuccess() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  [523, 659, 784].forEach((freq, i) => {
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
-    o.frequency.value = freq;
-    g.gain.setValueAtTime(0.06, ctx.currentTime + i * 0.1);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.15);
-    o.start(ctx.currentTime + i * 0.1);
-    o.stop(ctx.currentTime + i * 0.1 + 0.15);
+/* ============================================================  AUTH  */
+function doLogin(){const e=document.getElementById('authEmail').value.trim(),p=document.getElementById('authPassword').value;document.getElementById('authError').textContent='';auth.signInWithEmailAndPassword(e,p).then(()=>{closeModal('authModal');toast('Sesión iniciada','success');playOk();}).catch(err=>{document.getElementById('authError').textContent=err.message;});}
+function doLogout(){auth.signOut().then(()=>toast('Sesión cerrada','info'));}
+document.getElementById('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+auth.onAuthStateChanged(u=>{
+  currentUser=u;
+  isAdmin=!!(u&&u.uid===ADMIN_UID);
+  /* Show/hide ONLY the designated admin action rows — NOT containers */
+  ['adminTimeline','adminPersonajes','adminLugares','adminRelatos','adminCompendios'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=isAdmin?'flex':'none';
   });
-}
-
-// Global click listener for sound
-document.addEventListener('click', e => {
-  if (e.target.matches('button, .btn, .tab-btn, .book-card, .relato-entry')) {
-    playClick();
-  }
-}, true);
-
-document.addEventListener('mouseover', e => {
-  if (e.target.matches('.tab-btn, .book-card')) {
-    playHover();
-  }
-}, true);
-
-/* ============================================================
-   STARFIELD CANVAS
-============================================================ */
-(function() {
-  const canvas = document.getElementById('starCanvas');
-  const ctx = canvas.getContext('2d');
-  let stars = [];
-  const N = 120;
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-
-  function initStars() {
-    stars = Array.from({length: N}, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.5 + 0.2,
-      a: Math.random(),
-      da: (Math.random() - 0.5) * 0.004,
-      speed: Math.random() * 0.05 + 0.01,
-    }));
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach(s => {
-      s.a += s.da;
-      if (s.a > 1) s.da *= -1;
-      if (s.a < 0.1) s.da *= -1;
-      s.y += s.speed;
-      if (s.y > canvas.height) s.y = 0;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(180,160,255,${s.a * 0.7})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  initStars();
-  draw();
-  window.addEventListener('resize', () => { resize(); initStars(); });
-})();
-
-/* ============================================================
-   UTILITIES
-============================================================ */
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[m]));
-}
-
-function toast(msg, type = 'info', duration = 3000) {
-  const icons = { success:'fas fa-check-circle', error:'fas fa-exclamation-circle', info:'fas fa-info-circle' };
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<i class="${icons[type]}"></i><span>${msg}</span>`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => {
-    el.style.animation = 'toastOut 0.3s ease forwards';
-    setTimeout(() => el.remove(), 300);
-  }, duration);
-}
-
-function showForm(id) {
-  const el = document.getElementById(id);
-  if (el) { el.style.display = 'block'; el.scrollIntoView({behavior:'smooth', block:'nearest'}); }
-}
-
-function hideForm(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = 'none';
-}
-
-function toggleReplyForm(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const isOpen = el.style.display !== 'none';
-  el.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) el.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Custom confirm dialog
-function confirmDialog(msg) {
-  return new Promise(resolve => {
-    confirmResolve = resolve;
-    document.getElementById('confirmMsg').textContent = msg || '¿Estás seguro?';
-    document.getElementById('confirmOverlay').classList.add('open');
-  });
-}
-
-document.getElementById('confirmYes').onclick = () => {
-  document.getElementById('confirmOverlay').classList.remove('open');
-  if (confirmResolve) { confirmResolve(true); confirmResolve = null; }
-};
-
-document.getElementById('confirmNo').onclick = () => {
-  document.getElementById('confirmOverlay').classList.remove('open');
-  if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
-};
-
-/* ============================================================
-   IMAGE HANDLING (base64)
-============================================================ */
-function previewImage(input, previewId) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const dataUrl = e.target.result;
-    // Compress if too large
-    compressImage(dataUrl, 800, 0.75, compressed => {
-      const hiddenId = input.id + 'Data';
-      const hidden = document.getElementById(hiddenId) || (() => {
-        // fallback: find the hidden by convention
-        const h = input.parentElement ? input.parentElement.querySelector('input[type=hidden]') : null;
-        return h;
-      })();
-      if (hidden) hidden.value = compressed;
-      const preview = document.getElementById(previewId);
-      if (preview) { preview.src = compressed; preview.style.display = 'block'; }
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-function compressImage(dataUrl, maxW, quality, callback) {
-  const img = new Image();
-  img.onload = () => {
-    let w = img.width, h = img.height;
-    if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    callback(canvas.toDataURL('image/jpeg', quality));
-  };
-  img.src = dataUrl;
-}
-
-function resetImageField(fileId, previewId, hiddenId) {
-  const f = document.getElementById(fileId);
-  if (f) f.value = '';
-  const p = document.getElementById(previewId);
-  if (p) { p.src = ''; p.style.display = 'none'; }
-  const h = document.getElementById(hiddenId);
-  if (h) h.value = '';
-}
-
-/* ============================================================
-   AUTH
-============================================================ */
-function doLogin() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  document.getElementById('authError').textContent = '';
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => { closeModal('authModal'); toast('Sesión iniciada', 'success'); playSuccess(); })
-    .catch(err => { document.getElementById('authError').textContent = err.message; });
-}
-
-function doLogout() {
-  auth.signOut().then(() => toast('Sesión cerrada', 'info'));
-}
-
-// Enter to login
-document.getElementById('authPassword').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-auth.onAuthStateChanged(user => {
-  currentUser = user;
-  isAdmin = user && user.uid === ADMIN_UID;
-  updateAdminUI();
-});
-
-function updateAdminUI() {
-  document.getElementById('userStatus').textContent = isAdmin
-    ? `◈ Admin: ${currentUser.email}`
-    : (currentUser ? '' : '');
-  document.getElementById('loginBtn').style.display = currentUser ? 'none' : 'inline-flex';
-  document.getElementById('logoutBtn').style.display = currentUser ? 'inline-flex' : 'none';
-
-  document.querySelectorAll('.admin-only').forEach(el => {
-    el.style.display = isAdmin ? 'flex' : 'none';
-  });
-
-  // Re-render with updated admin state
-  if (allRelatos.length) renderRelatos(allRelatos);
-  if (allCompendios.length) renderCompendios(allCompendios);
-}
-
-/* ============================================================
-   TABS NAVIGATION
-============================================================ */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    const target = document.getElementById(btn.dataset.tab);
-    if (target) target.classList.add('active');
-  });
-});
-
-/* ============================================================
-   REALTIME LISTENERS
-============================================================ */
-loreRef.child('timeline').on('value', snap => {
-  let items = [];
-  snap.forEach(child => items.push({ id: child.key, ...child.val() }));
-  items.sort((a,b) => (a.fecha||'').localeCompare(b.fecha||''));
-  renderTimeline(items);
-});
-
-loreRef.child('personajes').on('value', snap => {
-  let items = [];
-  snap.forEach(child => items.push({ id: child.key, ...child.val() }));
-  renderPersonajes(items);
-});
-
-loreRef.child('lugares').on('value', snap => {
-  let items = [];
-  snap.forEach(child => items.push({ id: child.key, ...child.val() }));
-  renderLugares(items);
-});
-
-loreRef.child('relatos').on('value', snap => {
-  allRelatos = [];
-  snap.forEach(child => allRelatos.push({ id: child.key, ...child.val() }));
+  document.getElementById('userStatus').textContent=isAdmin?`◈ ${currentUser.email}`:'';
+  document.getElementById('loginBtn').style.display=currentUser?'none':'inline-flex';
+  document.getElementById('logoutBtn').style.display=currentUser?'inline-flex':'none';
+  /* Re-render to show/hide edit buttons inside cards */
+  renderTimeline(window._timelineItems||[]);
+  renderPersonajes(window._personajesItems||[]);
+  renderLugares(window._lugaresItems||[]);
   renderRelatos(allRelatos);
-  buildTagFilter(allRelatos);
-  populateCompendioSelect();
-});
-
-loreRef.child('compendios').on('value', snap => {
-  allCompendios = [];
-  snap.forEach(child => allCompendios.push({ id: child.key, ...child.val() }));
   renderCompendios(allCompendios);
-  populateCompendioSelect();
 });
 
-foroPostsRef.orderByChild('fecha').on('value', snap => {
-  let posts = [];
-  snap.forEach(child => posts.push({ id: child.key, ...child.val() }));
+/* ============================================================  TABS  */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    const tgt=document.getElementById(btn.dataset.tab);
+    if(tgt)tgt.classList.add('active');
+  });
+});
+
+/* ============================================================  REALTIME LISTENERS  */
+loreRef.child('timeline').on('value',snap=>{
+  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
+  items.sort((a,b)=>((a.orden||0)-(b.orden||0))||((a.fecha||'').localeCompare(b.fecha||'')));
+  window._timelineItems=items;renderTimeline(items);
+});
+loreRef.child('personajes').on('value',snap=>{
+  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
+  window._personajesItems=items;renderPersonajes(items);
+});
+loreRef.child('lugares').on('value',snap=>{
+  let items=[];snap.forEach(c=>items.push({id:c.key,...c.val()}));
+  window._lugaresItems=items;renderLugares(items);
+});
+loreRef.child('relatos').on('value',snap=>{
+  allRelatos=[];snap.forEach(c=>allRelatos.push({id:c.key,...c.val()}));
+  renderRelatos(allRelatos);buildTagFilter(allRelatos);populateCompendioSelect();
+});
+loreRef.child('compendios').on('value',snap=>{
+  allCompendios=[];snap.forEach(c=>allCompendios.push({id:c.key,...c.val()}));
+  renderCompendios(allCompendios);populateCompendioSelect();
+});
+foroPostsRef.orderByChild('fecha').on('value',snap=>{
+  let posts=[];snap.forEach(c=>posts.push({id:c.key,...c.val()}));
   posts.reverse();
-  foroRespuestasRef.once('value', rSnap => {
-    allRespuestas = [];
-    rSnap.forEach(r => allRespuestas.push({ id: r.key, ...r.val() }));
-    renderForo(posts);
-  });
+  foroRespRef.once('value',rs=>{allRespuestas=[];rs.forEach(r=>allRespuestas.push({id:r.key,...r.val()}));renderForo(posts);});
 });
+foroRespRef.on('value',snap=>{allRespuestas=[];snap.forEach(r=>allRespuestas.push({id:r.key,...r.val()}));});
 
-foroRespuestasRef.on('value', snap => {
-  allRespuestas = [];
-  snap.forEach(r => allRespuestas.push({ id: r.key, ...r.val() }));
-});
+/* ============================================================  TIMELINE RENDER  */
+const typeColors={origen:'#9a6ff5',tragedia:'#e07070',descubrimiento:'#7ec8c8',encuentro:'#b8922a',transformacion:'#6fcaa0',otro:'#7a7099'};
 
-/* ============================================================
-   TIMELINE RENDER
-============================================================ */
-const typeColors = {
-  origen:'#9a6ff5', tragedia:'#e07070', descubrimiento:'#7ec8c8',
-  encuentro:'#b8922a', transformacion:'#6fcaa0', otro:'#7a7099'
-};
-
-function renderTimeline(items) {
-  const container = document.getElementById('timelineContainer');
-  if (!container) return;
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half"></i> No hay eventos registrados aún.</div>`;
-    return;
-  }
-  container.innerHTML = items.map(ev => `
-    <div class="timeline-item">
+function renderTimeline(items){
+  const c=document.getElementById('timelineContainer');if(!c)return;
+  if(!items.length){c.innerHTML='<div class="empty-state"><i class="fas fa-hourglass-half"></i> No hay eventos registrados aún.</div>';return;}
+  c.innerHTML=items.map((ev,i)=>`
+    <div class="timeline-item" data-id="${ev.id}" data-order="${ev.orden||i}" draggable="${isAdmin}">
       <div class="timeline-card">
-        ${ev.imagen ? `<img class="card-img" src="${ev.imagen}" alt="${escapeHtml(ev.titulo)}">` : ''}
-        <div class="card-title">${escapeHtml(ev.titulo)}</div>
+        ${isAdmin?`<span class="drag-handle" title="Arrastrar para reordenar"><i class="fas fa-grip-vertical"></i></span>`:''}
+        ${ev.imagen?`<img class="card-img" src="${esc(ev.imagen)}" alt="${esc(ev.titulo)}">`:''}
+        <div class="card-title">${esc(ev.titulo)}</div>
         <div class="card-meta">
-          <span>${escapeHtml(ev.fecha || 'Época desconocida')}</span>
-          <span class="event-type-badge" style="border-color:${typeColors[ev.tipo]||'#7a7099'}20; color:${typeColors[ev.tipo]||'#7a7099'};">${escapeHtml(ev.tipo || 'evento')}</span>
+          <span>${esc(ev.fecha||'Época desconocida')}</span>
+          <span class="event-type-badge" style="color:${typeColors[ev.tipo]||'#7a7099'}">${esc(ev.tipo||'evento')}</span>
+          ${ev.orden!==undefined?`<span style="color:var(--text-faint);font-size:.65rem">#${ev.orden}</span>`:''}
         </div>
-        <div class="card-body">${escapeHtml(ev.descripcion || '')}</div>
-        ${isAdmin ? `
-          <div class="card-actions">
-            <button class="btn btn-secondary" onclick="editEvent('${ev.id}')"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-danger" onclick="deleteItem('timeline','${ev.id}')"><i class="fas fa-trash"></i></button>
-          </div>` : ''}
+        <div class="card-body">${esc(ev.descripcion||'')}</div>
+        ${isAdmin?`<div class="card-actions">
+          <button class="btn btn-secondary btn-sm" onclick="editEvent('${ev.id}')"><i class="fas fa-edit"></i> Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('timeline','${ev.id}')"><i class="fas fa-trash"></i></button>
+        </div>`:''}
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
+  if(isAdmin)initTimelineDrag();
 }
 
-/* ============================================================
-   PERSONAJES RENDER
-============================================================ */
-function renderPersonajes(items) {
-  const container = document.getElementById('personajesContainer');
-  if (!container) return;
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-user-circle"></i> No hay personajes registrados.</div>`;
-    return;
-  }
-  const rolClass = { aliado:'rol-aliado', antagonista:'rol-antagonista', neutral:'rol-neutral', desconocido:'rol-neutral' };
-  container.innerHTML = items.map(p => `
-    <div class="card">
-      ${p.imagen ? `<img class="card-img" src="${p.imagen}" alt="${escapeHtml(p.nombre)}">` : ''}
-      <div class="card-title">${escapeHtml(p.nombre)}</div>
-      <div class="card-meta">
-        <span class="tag ${rolClass[p.rol]||'rol-neutral'}">${escapeHtml(p.rol || 'desconocido')}</span>
-        ${p.relaciones && p.relaciones.length ? `<span>↔ ${escapeHtml(p.relaciones.join(', '))}</span>` : ''}
-      </div>
-      <div class="card-body">${escapeHtml(p.descripcion || '')}</div>
-      ${isAdmin ? `
-        <div class="card-actions">
-          <button class="btn btn-secondary" onclick="editPersonaje('${p.id}')"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger" onclick="deleteItem('personajes','${p.id}')"><i class="fas fa-trash"></i></button>
-        </div>` : ''}
-    </div>
-  `).join('');
-}
-
-/* ============================================================
-   LUGARES RENDER
-============================================================ */
-function renderLugares(items) {
-  const container = document.getElementById('lugaresContainer');
-  if (!container) return;
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-compass"></i> No hay lugares registrados.</div>`;
-    return;
-  }
-  container.innerHTML = items.map(l => `
-    <div class="card">
-      ${l.imagen ? `<img class="card-img" src="${l.imagen}" alt="${escapeHtml(l.nombre)}">` : ''}
-      <div class="card-title">${escapeHtml(l.nombre)}</div>
-      <div class="card-meta"><span class="tag">${escapeHtml(l.tipo || 'lugar')}</span></div>
-      <div class="card-body">${escapeHtml(l.descripcion || '')}</div>
-      ${isAdmin ? `
-        <div class="card-actions">
-          <button class="btn btn-secondary" onclick="editLugar('${l.id}')"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger" onclick="deleteItem('lugares','${l.id}')"><i class="fas fa-trash"></i></button>
-        </div>` : ''}
-    </div>
-  `).join('');
-}
-
-/* ============================================================
-   RELATOS RENDER + TAG FILTER
-============================================================ */
-function buildTagFilter(items) {
-  const all = new Set();
-  items.forEach(r => (r.etiquetas||[]).forEach(t => all.add(t)));
-  const container = document.getElementById('relatoTagFilter');
-  container.innerHTML = [...all].map(t => `
-    <button class="btn-icon-sm tag-filter-btn" data-tag="${escapeHtml(t)}" onclick="filterByTag('${escapeHtml(t)}')">${escapeHtml(t)}</button>
-  `).join('');
-}
-
-function filterByTag(tag) {
-  activeTagFilter = tag;
-  document.getElementById('clearTagFilter').style.display = 'inline-flex';
-  document.querySelectorAll('.tag-filter-btn').forEach(b => {
-    b.style.borderColor = b.dataset.tag === tag ? 'var(--purple-mid)' : 'var(--border)';
-    b.style.color = b.dataset.tag === tag ? 'var(--purple-soft)' : '';
+/* Drag reorder timeline */
+function initTimelineDrag(){
+  const container=document.getElementById('timelineContainer');
+  let dragSrc=null;
+  container.querySelectorAll('.timeline-item').forEach(item=>{
+    item.addEventListener('dragstart',e=>{dragSrc=item;item.style.opacity='.45';e.dataTransfer.effectAllowed='move';});
+    item.addEventListener('dragend',()=>{item.style.opacity='';container.querySelectorAll('.timeline-item').forEach(i=>i.classList.remove('drag-over'));});
+    item.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';item.classList.add('drag-over');});
+    item.addEventListener('dragleave',()=>item.classList.remove('drag-over'));
+    item.addEventListener('drop',e=>{
+      e.preventDefault();item.classList.remove('drag-over');
+      if(!dragSrc||dragSrc===item)return;
+      const allItems=[...container.querySelectorAll('.timeline-item')];
+      const fromIdx=allItems.indexOf(dragSrc),toIdx=allItems.indexOf(item);
+      if(fromIdx<0||toIdx<0)return;
+      /* Re-insert DOM */
+      if(fromIdx<toIdx)item.after(dragSrc);else item.before(dragSrc);
+      /* Save new order to Firebase */
+      const newOrder=[...container.querySelectorAll('.timeline-item')];
+      const updates={};
+      newOrder.forEach((el,i)=>{const id=el.dataset.id;if(id)updates[id+'/orden']=i;});
+      loreRef.child('timeline').update(updates);
+      toast('Orden actualizado','success');
+    });
   });
-  renderRelatos(allRelatos);
 }
 
-function clearTagFilter() {
-  activeTagFilter = null;
-  document.getElementById('clearTagFilter').style.display = 'none';
-  document.querySelectorAll('.tag-filter-btn').forEach(b => {
-    b.style.borderColor = '';
-    b.style.color = '';
-  });
-  renderRelatos(allRelatos);
+/* ============================================================  PERSONAJES RENDER  */
+function renderPersonajes(items){
+  const c=document.getElementById('personajesContainer');if(!c)return;
+  if(!items.length){c.innerHTML='<div class="empty-state"><i class="fas fa-user-circle"></i> No hay personajes registrados.</div>';return;}
+  const rolCls={aliado:'aliado',antagonista:'antagonista',neutral:'',desconocido:''};
+  const html=items.map(p=>{
+    const conns=Array.isArray(p.conexiones)?p.conexiones:[];
+    const connHtml=conns.length?conns.map(cn=>`<div style="font-size:.78rem;color:var(--text-main);padding:.2rem 0;border-bottom:1px solid var(--border);display:flex;gap:.4rem;align-items:center"><span style="font-size:.65rem;color:var(--purple-soft);min-width:70px">${esc(cn.tipo||'')}</span><span>${esc(cn.nombre||'')}</span></div>`).join(''):'';
+    return `<div class="card">
+      ${p.imagen?`<img class="card-img" src="${esc(p.imagen)}" alt="${esc(p.nombre)}">`:''}
+      <div class="card-title">${esc(p.nombre)}</div>
+      <div class="card-meta"><span class="tag ${rolCls[p.rol]||''}">${esc(p.rol||'desconocido')}</span></div>
+      <div class="card-body">${esc(p.descripcion||'')}</div>
+      ${p.habilidades?`<div class="card-section"><div class="card-section-label"><i class="fas fa-bolt"></i> Habilidades</div><div class="card-section-body">${esc(p.habilidades)}</div></div>`:''}
+      ${connHtml?`<div class="card-section"><div class="card-section-label"><i class="fas fa-project-diagram"></i> Conexiones</div>${connHtml}</div>`:''}
+      ${isAdmin?`<div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editPersonaje('${p.id}')"><i class="fas fa-edit"></i> Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('personajes','${p.id}')"><i class="fas fa-trash"></i></button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+  c.innerHTML=html;
 }
 
-function renderRelatos(items) {
-  const container = document.getElementById('relatosContainer');
-  if (!container) return;
-  let filtered = activeTagFilter
-    ? items.filter(r => (r.etiquetas||[]).includes(activeTagFilter))
-    : items;
+/* ============================================================  LUGARES RENDER  */
+function renderLugares(items){
+  const c=document.getElementById('lugaresContainer');if(!c)return;
+  if(!items.length){c.innerHTML='<div class="empty-state"><i class="fas fa-compass"></i> No hay lugares registrados.</div>';return;}
+  const polClass={aliado:'pol-aliado',guerra:'pol-guerra',neutral:'pol-neutral',comercio:'pol-comercio',tension:'pol-tension'};
+  c.innerHTML=items.map(l=>{
+    const pols=Array.isArray(l.politica)?l.politica:[];
+    const polHtml=pols.length?pols.map(p=>`<div style="display:flex;align-items:center;gap:.4rem;padding:.2rem 0;border-bottom:1px solid var(--border)"><span class="politics-badge ${polClass[p.tipo]||'pol-neutral'}">${esc(p.tipo||'')}</span><span style="font-size:.8rem;color:var(--text-main)">${esc(p.nombre||'')}</span>${p.nota?`<span style="font-size:.7rem;color:var(--text-faint)">· ${esc(p.nota)}</span>`:''}</div>`).join(''):'';
+    return `<div class="card">
+      ${l.imagen?`<img class="card-img" src="${esc(l.imagen)}" alt="${esc(l.nombre)}">`:''}
+      <div class="card-title">${esc(l.nombre)}</div>
+      <div class="card-meta"><span class="tag">${esc(l.tipo||'lugar')}</span>${l.poblacion?`<span>${esc(l.poblacion)}</span>`:''}</div>
+      <div class="card-body">${esc(l.descripcion||'')}</div>
+      ${l.gobierno?`<div class="card-section"><div class="card-section-label"><i class="fas fa-crown"></i> Gobierno</div><div class="card-section-body">${esc(l.gobierno)}</div></div>`:''}
+      ${l.historia?`<div class="card-section"><div class="card-section-label"><i class="fas fa-scroll"></i> Historia</div><div class="card-section-body">${esc(l.historia)}</div></div>`:''}
+      ${l.especial?`<div class="card-section"><div class="card-section-label"><i class="fas fa-magic"></i> Características especiales</div><div class="card-section-body">${esc(l.especial)}</div></div>`:''}
+      ${polHtml?`<div class="card-section"><div class="card-section-label"><i class="fas fa-handshake"></i> Estado político</div>${polHtml}</div>`:''}
+      ${isAdmin?`<div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editLugar('${l.id}')"><i class="fas fa-edit"></i> Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('lugares','${l.id}')"><i class="fas fa-trash"></i></button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
 
-  if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-scroll"></i> No hay relatos${activeTagFilter ? ' con esta etiqueta' : ''}.</div>`;
-    return;
-  }
-  container.innerHTML = filtered.map(r => `
-    <div class="card" onclick="openRelato('${r.id}')">
-      ${r.imagen ? `<img class="card-img" src="${r.imagen}" alt="${escapeHtml(r.titulo)}">` : ''}
-      <div class="card-title">${escapeHtml(r.titulo)}</div>
+/* ============================================================  RELATOS  */
+function buildTagFilter(items){
+  const all=new Set();items.forEach(r=>(r.etiquetas||[]).forEach(t=>all.add(t)));
+  document.getElementById('relatoTagFilter').innerHTML=[...all].map(t=>`<button class="btn btn-secondary btn-sm tag-fbtn" data-tag="${esc(t)}" onclick="filterByTag('${esc(t)}')">${esc(t)}</button>`).join('');
+}
+function filterByTag(tag){activeTag=tag;document.getElementById('clearTagFilter').style.display='inline-flex';document.querySelectorAll('.tag-fbtn').forEach(b=>{b.style.background=b.dataset.tag===tag?'var(--purple-dim)':'';b.style.color=b.dataset.tag===tag?'var(--purple-soft)':'';});renderRelatos(allRelatos);}
+function clearTagFilter(){activeTag=null;document.getElementById('clearTagFilter').style.display='none';document.querySelectorAll('.tag-fbtn').forEach(b=>{b.style.background='';b.style.color='';});renderRelatos(allRelatos);}
+
+function renderRelatos(items){
+  const c=document.getElementById('relatosContainer');if(!c)return;
+  const filtered=activeTag?items.filter(r=>(r.etiquetas||[]).includes(activeTag)):items;
+  if(!filtered.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-scroll"></i> No hay relatos${activeTag?' con esta etiqueta':''}.</div>`;return;}
+  c.innerHTML=filtered.map(r=>`
+    <div class="card clickable" onclick="openRelato('${r.id}')">
+      ${r.imagen?`<img class="card-img" src="${esc(r.imagen)}" alt="${esc(r.titulo)}">`:''}
+      <div class="card-title">${esc(r.titulo)}</div>
       <div class="card-meta">
-        ${r.compendioId ? `<span class="tag"><i class="fas fa-book" style="margin-right:3px;"></i>${escapeHtml(getCompendioName(r.compendioId))}</span>` : ''}
-        ${(r.etiquetas||[]).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+        ${r.compendioId?`<span class="tag"><i class="fas fa-book" style="margin-right:3px"></i>${esc(getCompendioName(r.compendioId))}</span>`:''}
+        ${(r.etiquetas||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
       </div>
-      <div class="card-body" style="overflow:hidden; max-height:80px; position:relative;">
-        ${marked.parse(r.contenido || '').replace(/<[^>]+>/g,'').substring(0,200)}...
-      </div>
-      ${isAdmin ? `
-        <div class="card-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-secondary" onclick="editRelato('${r.id}')"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger" onclick="deleteItem('relatos','${r.id}')"><i class="fas fa-trash"></i></button>
-        </div>` : ''}
-    </div>
-  `).join('');
+      <div class="card-body" style="overflow:hidden;max-height:72px">${(marked.parse(r.contenido||'')).replace(/<[^>]+>/g,'').substring(0,180)}...</div>
+      ${isAdmin?`<div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-secondary btn-sm" onclick="editRelato('${r.id}')"><i class="fas fa-edit"></i> Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('relatos','${r.id}')"><i class="fas fa-trash"></i></button>
+      </div>`:''}
+    </div>`).join('');
 }
-
-function getCompendioName(id) {
-  const c = allCompendios.find(c => c.id === id);
-  return c ? c.nombre : id;
-}
-
-function openRelato(id) {
-  const r = allRelatos.find(r => r.id === id);
-  if (!r) return;
-  const compName = r.compendioId ? getCompendioName(r.compendioId) : null;
-  document.getElementById('readerContent').innerHTML = `
-    ${r.imagen ? `<img src="${r.imagen}" style="width:100%;max-height:250px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:1.5rem;">` : ''}
-    <div class="modal-title">${escapeHtml(r.titulo)}</div>
-    <div class="modal-subtitle">
-      ${compName ? `<i class="fas fa-book" style="margin-right:4px; color:var(--purple-mid);"></i>${escapeHtml(compName)} · ` : ''}
-      ${(r.etiquetas||[]).join(' · ')}
-    </div>
-    <div class="reader-content">${marked.parse(r.contenido || '')}</div>
-  `;
+function getCompendioName(id){const c=allCompendios.find(x=>x.id===id);return c?c.nombre:id;}
+function openRelato(id){
+  const r=allRelatos.find(x=>x.id===id);if(!r)return;
+  const cn=r.compendioId?getCompendioName(r.compendioId):null;
+  document.getElementById('readerContent').innerHTML=`
+    ${r.imagen?`<img src="${esc(r.imagen)}" style="width:100%;max-height:240px;object-fit:cover;border-radius:14px;margin-bottom:1.3rem">`:''}
+    <div class="modal-title">${esc(r.titulo)}</div>
+    <div class="modal-subtitle">${cn?`<i class="fas fa-book" style="margin-right:4px;color:var(--purple-mid)"></i>${esc(cn)} · `:''} ${(r.etiquetas||[]).join(' · ')}</div>
+    <div class="reader-content">${marked.parse(r.contenido||'')}</div>`;
   openModal('readerModal');
 }
 
-/* ============================================================
-   COMPENDIOS RENDER (BOOK STYLE)
-============================================================ */
-function renderCompendios(items) {
-  const container = document.getElementById('compendiosContainer');
-  if (!container) return;
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-book-open"></i> No hay compendios. Crea el primero.</div>`;
-    return;
-  }
-  container.innerHTML = items.map(c => {
-    const count = allRelatos.filter(r => r.compendioId === c.id).length;
-    return `
-      <div class="book-card" onclick="openCompendio('${c.id}')">
-        <div class="book-spine"></div>
-        <div class="book-cover">
-          ${c.imagen ? `<img class="book-cover-img" src="${c.imagen}" alt="${escapeHtml(c.nombre)}">` : ''}
-          <div class="book-title">${escapeHtml(c.nombre)}</div>
-          <div class="book-desc">${escapeHtml(c.descripcion ? c.descripcion.substring(0,80) + (c.descripcion.length > 80 ? '...' : '') : '')}</div>
-        </div>
-        <div class="book-footer">
-          <span><i class="fas fa-feather-alt" style="margin-right:4px;"></i>${count} relato${count !== 1 ? 's' : ''}</span>
-          ${isAdmin ? `<span class="admin-only" style="display:flex; gap:0.3rem;">
-            <button class="btn-icon-sm" onclick="event.stopPropagation(); editCompendio('${c.id}')"><i class="fas fa-edit"></i></button>
-            <button class="btn-icon-sm" style="color:var(--danger-soft);" onclick="event.stopPropagation(); deleteItem('compendios','${c.id}')"><i class="fas fa-trash"></i></button>
-          </span>` : ''}
-        </div>
+/* ============================================================  COMPENDIOS  */
+function renderCompendios(items){
+  const c=document.getElementById('compendiosContainer');if(!c)return;
+  if(!items.length){c.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-book-open"></i> No hay compendios.</div>';return;}
+  c.innerHTML=items.map(ci=>{
+    const cnt=allRelatos.filter(r=>r.compendioId===ci.id).length;
+    return `<div class="book-card" onclick="openCompendio('${ci.id}')">
+      <div class="book-spine"></div>
+      <div class="book-cover">
+        ${ci.imagen?`<img class="book-cover-img" src="${esc(ci.imagen)}" alt="${esc(ci.nombre)}">`:''}
+        <div class="book-title">${esc(ci.nombre)}</div>
+        <div class="book-desc">${esc((ci.descripcion||'').substring(0,75))}${ci.descripcion&&ci.descripcion.length>75?'...':''}</div>
       </div>
-    `;
+      <div class="book-footer">
+        <span><i class="fas fa-feather-alt" style="margin-right:3px"></i>${cnt} relato${cnt!==1?'s':''}</span>
+        ${isAdmin?`<span style="display:flex;gap:.3rem">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editCompendio('${ci.id}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteItem('compendios','${ci.id}')"><i class="fas fa-trash"></i></button>
+        </span>`:''}
+      </div>
+    </div>`;
   }).join('');
 }
-
-function openCompendio(id) {
-  const c = allCompendios.find(c => c.id === id);
-  if (!c) return;
-  activeCompendioId = id;
-  document.getElementById('compendioModalTitle').textContent = c.nombre;
-  document.getElementById('compendioModalDesc').textContent = c.descripcion || '';
-
-  const relatos = allRelatos.filter(r => r.compendioId === id);
-  const list = document.getElementById('compendioRelatosList');
-  if (!relatos.length) {
-    list.innerHTML = `<div style="color:var(--text-faint); font-style:italic; font-size:0.88rem;">Este compendio no tiene relatos aún.</div>`;
-  } else {
-    list.innerHTML = relatos.map(r => `
-      <div class="relato-entry" onclick="closeModal('compendioModal'); setTimeout(()=>openRelato('${r.id}'),200);">
-        <div class="relato-entry-title"><i class="fas fa-feather-alt" style="margin-right:5px; color:var(--purple-mid); font-size:0.75rem;"></i>${escapeHtml(r.titulo)}</div>
-        <div class="relato-entry-tags">${(r.etiquetas||[]).join(' · ')}</div>
-      </div>
-    `).join('');
-  }
-
-  // Admin actions
-  const adminDiv = document.getElementById('compendioModalAdminActions');
-  if (adminDiv) adminDiv.style.display = isAdmin ? 'flex' : 'none';
-
+function openCompendio(id){
+  activeCompendioId=id;
+  const ci=allCompendios.find(x=>x.id===id);if(!ci)return;
+  document.getElementById('cmTitle').textContent=ci.nombre;
+  document.getElementById('cmDesc').textContent=ci.descripcion||'';
+  const relatos=allRelatos.filter(r=>r.compendioId===id);
+  document.getElementById('cmRelatos').innerHTML=relatos.length
+    ?relatos.map(r=>`<div class="relato-entry" onclick="closeModal('compendioModal');setTimeout(()=>openRelato('${r.id}'),180)"><div class="relato-entry-title"><i class="fas fa-feather-alt" style="margin-right:5px;color:var(--purple-mid);font-size:.72rem"></i>${esc(r.titulo)}</div><div class="relato-entry-tags">${(r.etiquetas||[]).join(' · ')}</div></div>`).join('')
+    :'<div style="color:var(--text-faint);font-style:italic;font-size:.85rem">Sin relatos en este compendio aún.</div>';
   openModal('compendioModal');
 }
 
-// Compendio modal admin buttons
-document.querySelector('.btn-edit-compendio')?.addEventListener('click', () => {
-  if (activeCompendioId) { closeModal('compendioModal'); editCompendio(activeCompendioId); }
-});
-document.querySelector('.btn-delete-compendio')?.addEventListener('click', () => {
-  if (activeCompendioId) { closeModal('compendioModal'); deleteItem('compendios', activeCompendioId); }
-});
-
-/* ============================================================
-   POPULATE COMPENDIO SELECT (for relato form)
-============================================================ */
-function populateCompendioSelect() {
-  const sel = document.getElementById('relatoCompendio');
-  if (!sel) return;
-  const current = sel.value;
-  sel.innerHTML = `<option value="">— Sin compendio —</option>` +
-    allCompendios.map(c => `<option value="${c.id}" ${current === c.id ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join('');
+function populateCompendioSelect(){
+  const sel=document.getElementById('relatoCompendio');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">— Sin compendio —</option>`+allCompendios.map(ci=>`<option value="${ci.id}"${cur===ci.id?' selected':''}>${esc(ci.nombre)}</option>`).join('');
 }
 
-/* ============================================================
-   FORO RENDER
-============================================================ */
-function renderForo(posts) {
-  const container = document.getElementById('foroContainer');
-  if (!container) return;
-  if (!posts.length) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-comments"></i> No hay publicaciones. ¡Sé el primero en teorizar!</div>`;
-    return;
-  }
-  container.innerHTML = posts.map(post => {
-    const respuestas = allRespuestas.filter(r => r.postId === post.id).sort((a,b) => (a.fecha||0)-(b.fecha||0));
-    const fecha = post.fecha ? new Date(post.fecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-    return `
-      <div class="foro-post" id="post-${post.id}">
-        <div class="post-header">
-          <div class="post-header-left">
-            <div class="post-title">${escapeHtml(post.titulo)}</div>
-            <div class="post-meta">Por <strong style="color:var(--purple-soft)">${escapeHtml(post.autor||'Anónimo')}</strong> · ${fecha}</div>
-          </div>
-          ${isAdmin ? `<button class="btn btn-danger" onclick="deleteForoPost('${post.id}')" title="Eliminar publicación"><i class="fas fa-trash"></i></button>` : ''}
+/* ============================================================  FORO RENDER  */
+function renderForo(posts){
+  const c=document.getElementById('foroContainer');if(!c)return;
+  if(!posts.length){c.innerHTML='<div class="empty-state"><i class="fas fa-comments"></i> No hay publicaciones. ¡Sé el primero!</div>';return;}
+  /* Build all posts as DOM string */
+  const html=posts.map(post=>{
+    const respuestas=allRespuestas.filter(r=>r.postId===post.id).sort((a,b)=>(a.fecha||0)-(b.fecha||0));
+    return `<div class="foro-post" id="post-${post.id}">
+      <div class="post-header">
+        <div>
+          <div class="post-title">${esc(post.titulo)}</div>
+          <div class="post-meta">Por <strong style="color:var(--purple-soft)">${esc(post.autor||'Anónimo')}</strong> · ${fmtDate(post.fecha)}</div>
         </div>
-        <div class="post-body">
-          ${escapeHtml(post.contenido)}
-          ${post.imagen ? `<br><img class="post-img" src="${post.imagen}" alt="imagen">` : ''}
+        ${isAdmin?`<button class="btn btn-danger btn-sm" onclick="deleteForoPost('${post.id}')"><i class="fas fa-trash"></i></button>`:''}
+      </div>
+      <div class="post-body">${esc(post.contenido)}${post.imagen?`<img class="post-img" src="${esc(post.imagen)}">`:''}
+      </div>
+      <div class="post-footer">
+        <button class="btn btn-secondary btn-sm" onclick="toggleInlineReply('ireply-${post.id}')"><i class="fas fa-reply"></i> Responder</button>
+        <span class="reply-count">${respuestas.length} respuesta${respuestas.length!==1?'s':''}</span>
+      </div>
+      <div class="respuestas-wrap" id="respwrap-${post.id}">
+        ${respuestas.map(r=>`<div class="respuesta-item" id="resp-${r.id}">
+          <div class="resp-autor">${esc(r.autor||'Anónimo')}</div>
+          <div class="resp-texto">${esc(r.texto)}</div>
+          ${r.imagen?`<img class="resp-img" src="${esc(r.imagen)}">`:''}
+          <div class="resp-meta">${fmtDate(r.fecha)}</div>
+          ${isAdmin?`<button class="btn btn-danger btn-sm" style="margin-top:.3rem" onclick="deleteRespuesta('${r.id}')"><i class="fas fa-trash"></i> Eliminar</button>`:''}
+        </div>`).join('')}
+      </div>
+      <div class="inline-reply" id="ireply-${post.id}">
+        <div class="form-group"><label>Tu nombre</label><input type="text" id="rautor-${post.id}" placeholder="Anónimo"></div>
+        <div class="form-group"><label>Respuesta</label><textarea id="rtexto-${post.id}" placeholder="Escribe tu respuesta..." style="min-height:70px"></textarea></div>
+        <div class="form-group">
+          <label>Imagen (opcional)</label>
+          <div class="img-upload-area" onclick="document.getElementById('rimg-${post.id}').click()"><i class="fas fa-image"></i> Adjuntar</div>
+          <input type="file" id="rimg-${post.id}" accept="image/*" style="display:none" onchange="handleImg(this,'rimgprev-${post.id}','rimgdata-${post.id}')">
+          <img id="rimgprev-${post.id}" class="img-preview-thumb"><input type="hidden" id="rimgdata-${post.id}">
         </div>
-        <div class="post-footer">
-          <button class="btn btn-secondary" onclick="toggleReplyForm('reply-${post.id}')"><i class="fas fa-reply"></i> Responder (${respuestas.length})</button>
-        </div>
-        <div class="respuestas-section" id="respuestas-${post.id}">
-          ${respuestas.map(r => `
-            <div class="respuesta-item" id="resp-${r.id}">
-              <div class="respuesta-autor">${escapeHtml(r.autor||'Anónimo')}</div>
-              <div class="respuesta-texto">${escapeHtml(r.texto)}</div>
-              ${r.imagen ? `<img class="respuesta-img" src="${r.imagen}" alt="">` : ''}
-              <div class="respuesta-meta">${r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>
-              ${isAdmin ? `<button class="btn btn-danger" style="margin-top:0.4rem; padding:0.2rem 0.5rem; font-size:0.68rem;" onclick="deleteRespuesta('${r.id}')"><i class="fas fa-trash"></i> Eliminar</button>` : ''}
-            </div>
-          `).join('')}
-        </div>
-        <div class="reply-form" id="reply-${post.id}">
-          <div class="form-group"><label>Tu nombre</label><input type="text" id="autor-${post.id}" placeholder="Anónimo"></div>
-          <div class="form-group"><label>Respuesta</label><textarea id="texto-${post.id}" placeholder="Escribe tu respuesta..."></textarea></div>
-          <div class="form-group">
-            <label>Imagen (opcional)</label>
-            <div class="img-upload-area" onclick="document.getElementById('img-${post.id}').click()"><i class="fas fa-image"></i> Adjuntar imagen</div>
-            <input type="file" id="img-${post.id}" accept="image/*" style="display:none;" onchange="previewImage(this,'imgprev-${post.id}')">
-            <img id="imgprev-${post.id}" class="img-preview">
-            <input type="hidden" id="img-${post.id}Data">
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveRespuesta('${post.id}')"><i class="fas fa-paper-plane"></i> Enviar</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('reply-${post.id}').classList.remove('open')"><i class="fas fa-times"></i> Cancelar</button>
-          </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveRespuesta('${post.id}')"><i class="fas fa-paper-plane"></i> Enviar</button>
+          <button class="btn btn-secondary" onclick="toggleInlineReply('ireply-${post.id}')"><i class="fas fa-times"></i> Cancelar</button>
         </div>
       </div>
-    `;
+    </div>`;
   }).join('');
+  c.innerHTML=html;
+}
+function toggleInlineReply(id){const el=document.getElementById(id);if(!el)return;el.classList.toggle('open');}
+
+/* ============================================================  CONNECTIONS (personaje form)  */
+function renderConnList(){
+  const list=document.getElementById('connList');if(!list)return;
+  list.innerHTML=tempConns.map((cn,i)=>`
+    <div class="conn-item">
+      <select onchange="tempConns[${i}].tipo=this.value" style="padding:.25rem .4rem;font-size:.78rem">
+        ${['Familia','Amigo','Amigo íntimo','Conocido','Rival','Enemigo','Aliado político','Mentor','Pupilo','Amante','Desconocido'].map(t=>`<option value="${t}"${cn.tipo===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <input type="text" value="${esc(cn.nombre)}" placeholder="Nombre del personaje" style="padding:.25rem .4rem;font-size:.78rem" oninput="tempConns[${i}].nombre=this.value">
+      <button class="conn-remove" onclick="removeConn(${i})"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+function addConn(){tempConns.push({tipo:'Amigo',nombre:''});renderConnList();}
+function removeConn(i){tempConns.splice(i,1);renderConnList();}
+
+/* ============================================================  POLITICS (lugar form)  */
+function renderPoliticsList(){
+  const list=document.getElementById('politicsList');if(!list)return;
+  list.innerHTML=tempPolitics.map((p,i)=>`
+    <div class="politics-item">
+      <select onchange="tempPolitics[${i}].tipo=this.value" style="padding:.25rem .4rem;font-size:.76rem">
+        ${['aliado','neutral','guerra','comercio','tension'].map(t=>`<option value="${t}"${p.tipo===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}
+      </select>
+      <input type="text" value="${esc(p.nombre)}" placeholder="Nombre del reino/ciudad/facción" style="padding:.25rem .4rem;font-size:.78rem" oninput="tempPolitics[${i}].nombre=this.value">
+      <button class="conn-remove" onclick="removePolitics(${i})"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+function addPolitics(){tempPolitics.push({tipo:'neutral',nombre:''});renderPoliticsList();}
+function removePolitics(i){tempPolitics.splice(i,1);renderPoliticsList();}
+
+/* ============================================================  SAVES  */
+async function saveEvent(){
+  const id=document.getElementById('eventId').value;
+  const data={titulo:document.getElementById('eventTitle').value.trim(),fecha:document.getElementById('eventDate').value.trim(),descripcion:document.getElementById('eventDesc').value.trim(),tipo:document.getElementById('eventType').value,orden:parseInt(document.getElementById('eventOrder').value)||0};
+  if(!data.titulo){toast('El título es obligatorio','error');return;}
+  const img=document.getElementById('eventImgData').value;if(img)data.imagen=img;
+  try{if(id)await loreRef.child('timeline').child(id).update(data);else await loreRef.child('timeline').push(data);hideForm('eventForm');clearEventForm();toast('Evento guardado','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+function clearEventForm(){document.getElementById('eventId').value='';['eventTitle','eventDate','eventDesc','eventOrder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('eventType').value='origen';clearImg('eventImgPrev','eventImgData');}
+
+async function savePersonaje(){
+  const id=document.getElementById('personajeId').value;
+  const data={nombre:document.getElementById('personajeNombre').value.trim(),rol:document.getElementById('personajeRol').value,descripcion:document.getElementById('personajeDesc').value.trim(),habilidades:document.getElementById('personajeHabilidades').value.trim(),conexiones:tempConns.filter(c=>c.nombre.trim())};
+  if(!data.nombre){toast('El nombre es obligatorio','error');return;}
+  const img=document.getElementById('personajeImgData').value;if(img)data.imagen=img;
+  try{if(id)await loreRef.child('personajes').child(id).update(data);else await loreRef.child('personajes').push(data);hideForm('personajeForm');clearPersonajeForm();toast('Personaje guardado','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+function clearPersonajeForm(){document.getElementById('personajeId').value='';['personajeNombre','personajeDesc','personajeHabilidades'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('personajeRol').value='aliado';tempConns=[];renderConnList();clearImg('personajeImgPrev','personajeImgData');}
+
+async function saveLugar(){
+  const id=document.getElementById('lugarId').value;
+  const data={nombre:document.getElementById('lugarNombre').value.trim(),tipo:document.getElementById('lugarTipo').value,descripcion:document.getElementById('lugarDesc').value.trim(),gobierno:document.getElementById('lugarGobierno').value.trim(),poblacion:document.getElementById('lugarPoblacion').value.trim(),historia:document.getElementById('lugarHistoria').value.trim(),especial:document.getElementById('lugarEspecial').value.trim(),politica:tempPolitics.filter(p=>p.nombre.trim())};
+  if(!data.nombre){toast('El nombre es obligatorio','error');return;}
+  const img=document.getElementById('lugarImgData').value;if(img)data.imagen=img;
+  try{if(id)await loreRef.child('lugares').child(id).update(data);else await loreRef.child('lugares').push(data);hideForm('lugarForm');clearLugarForm();toast('Lugar guardado','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+function clearLugarForm(){document.getElementById('lugarId').value='';['lugarNombre','lugarDesc','lugarGobierno','lugarPoblacion','lugarHistoria','lugarEspecial'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('lugarTipo').value='ciudad';tempPolitics=[];renderPoliticsList();clearImg('lugarImgPrev','lugarImgData');}
+
+async function saveRelato(){
+  const id=document.getElementById('relatoId').value;
+  const data={titulo:document.getElementById('relatoTitulo').value.trim(),contenido:document.getElementById('relatoContenido').value,etiquetas:document.getElementById('relatoEtiquetas').value.split(',').map(s=>s.trim()).filter(Boolean),compendioId:document.getElementById('relatoCompendio').value||null};
+  if(!id)data.fechaCreacion=Date.now();
+  if(!data.titulo){toast('El título es obligatorio','error');return;}
+  const img=document.getElementById('relatoImgData').value;if(img)data.imagen=img;
+  Object.keys(data).forEach(k=>data[k]===undefined&&delete data[k]);
+  try{if(id)await loreRef.child('relatos').child(id).update(data);else await loreRef.child('relatos').push(data);hideForm('relatoForm');clearRelatoForm();toast('Relato guardado','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+function clearRelatoForm(){document.getElementById('relatoId').value='';['relatoTitulo','relatoContenido','relatoEtiquetas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('relatoCompendio').value='';document.getElementById('markdownPreview').innerHTML='<em>La vista previa aparecerá aquí...</em>';clearImg('relatoImgPrev','relatoImgData');}
+
+async function saveCompendio(){
+  const id=document.getElementById('compendioId').value;
+  const data={nombre:document.getElementById('compendioNombre').value.trim(),descripcion:document.getElementById('compendioDesc').value.trim()};
+  if(!data.nombre){toast('El nombre es obligatorio','error');return;}
+  const img=document.getElementById('compendioImgData').value;if(img)data.imagen=img;
+  try{if(id)await loreRef.child('compendios').child(id).update(data);else await loreRef.child('compendios').push(data);hideForm('compendioForm');clearCompendioForm();toast('Compendio guardado','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
+}
+function clearCompendioForm(){document.getElementById('compendioId').value='';['compendioNombre','compendioDesc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});clearImg('compendioImgPrev','compendioImgData');}
+
+async function savePost(){
+  const titulo=document.getElementById('postTitulo').value.trim(),contenido=document.getElementById('postContenido').value.trim(),autor=document.getElementById('postAutor').value.trim()||'Anónimo';
+  if(!titulo||!contenido){toast('Título y contenido son obligatorios','error');return;}
+  const data={titulo,contenido,autor,fecha:Date.now()};
+  const img=document.getElementById('postImgData').value;if(img)data.imagen=img;
+  try{await foroPostsRef.push(data);hideForm('newPostForm');['postTitulo','postContenido','postAutor'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});clearImg('postImgPrev','postImgData');toast('Publicación enviada','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
 }
 
-/* ============================================================
-   CRUD SAVES
-============================================================ */
-async function saveEvent() {
-  const id = document.getElementById('eventId').value;
-  const data = {
-    titulo: document.getElementById('eventTitle').value.trim(),
-    fecha: document.getElementById('eventDate').value.trim(),
-    descripcion: document.getElementById('eventDesc').value.trim(),
-    tipo: document.getElementById('eventType').value,
-  };
-  if (!data.titulo) { toast('El título es obligatorio', 'error'); return; }
-  const imgData = document.getElementById('eventImgData').value;
-  if (imgData) data.imagen = imgData;
-  try {
-    if (id) await loreRef.child('timeline').child(id).update(data);
-    else await loreRef.child('timeline').push(data);
-    hideForm('eventForm');
-    document.getElementById('eventId').value = '';
-    resetImageField('eventImg','eventImgPreview','eventImgData');
-    toast('Evento guardado', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
+async function saveRespuesta(postId){
+  const texto=(document.getElementById(`rtexto-${postId}`)||{}).value?.trim();
+  const autor=(document.getElementById(`rautor-${postId}`)||{}).value?.trim()||'Anónimo';
+  if(!texto){toast('Escribe una respuesta','error');return;}
+  const data={postId,texto,autor,fecha:Date.now()};
+  const imgEl=document.getElementById(`rimgdata-${postId}`);if(imgEl&&imgEl.value)data.imagen=imgEl.value;
+  try{await foroRespRef.push(data);const el=document.getElementById(`ireply-${postId}`);if(el)el.classList.remove('open');const ta=document.getElementById(`rtexto-${postId}`);if(ta)ta.value='';toast('Respuesta enviada','success');playOk();}
+  catch(e){toast('Error: '+e.message,'error');}
 }
 
-async function savePersonaje() {
-  const id = document.getElementById('personajeId').value;
-  const data = {
-    nombre: document.getElementById('personajeNombre').value.trim(),
-    rol: document.getElementById('personajeRol').value,
-    descripcion: document.getElementById('personajeDesc').value.trim(),
-    relaciones: document.getElementById('personajeRelaciones').value.split(',').map(s=>s.trim()).filter(Boolean),
-  };
-  if (!data.nombre) { toast('El nombre es obligatorio', 'error'); return; }
-  const imgData = document.getElementById('personajeImgData').value;
-  if (imgData) data.imagen = imgData;
-  try {
-    if (id) await loreRef.child('personajes').child(id).update(data);
-    else await loreRef.child('personajes').push(data);
-    hideForm('personajeForm');
-    document.getElementById('personajeId').value = '';
-    resetImageField('personajeImg','personajeImgPreview','personajeImgData');
-    toast('Personaje guardado', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
+/* ============================================================  DELETE  */
+async function deleteItem(col,id){if(!await confirmDialog('¿Eliminar permanentemente?'))return;try{await loreRef.child(col).child(id).remove();toast('Eliminado','info');}catch(e){toast('Error: '+e.message,'error');}}
+async function deleteForoPost(id){if(!await confirmDialog('¿Eliminar esta publicación y sus respuestas?'))return;try{await foroPostsRef.child(id).remove();const snap=await foroRespRef.once('value');const upd={};snap.forEach(r=>{if(r.val().postId===id)upd[r.key]=null;});if(Object.keys(upd).length)await foroRespRef.update(upd);toast('Publicación eliminada','info');}catch(e){toast('Error: '+e.message,'error');}}
+async function deleteRespuesta(id){if(!await confirmDialog('¿Eliminar esta respuesta?'))return;try{await foroRespRef.child(id).remove();toast('Respuesta eliminada','info');}catch(e){toast('Error: '+e.message,'error');}}
 
-async function saveLugar() {
-  const id = document.getElementById('lugarId').value;
-  const data = {
-    nombre: document.getElementById('lugarNombre').value.trim(),
-    tipo: document.getElementById('lugarTipo').value,
-    descripcion: document.getElementById('lugarDesc').value.trim(),
-  };
-  if (!data.nombre) { toast('El nombre es obligatorio', 'error'); return; }
-  const imgData = document.getElementById('lugarImgData').value;
-  if (imgData) data.imagen = imgData;
-  try {
-    if (id) await loreRef.child('lugares').child(id).update(data);
-    else await loreRef.child('lugares').push(data);
-    hideForm('lugarForm');
-    document.getElementById('lugarId').value = '';
-    resetImageField('lugarImg','lugarImgPreview','lugarImgData');
-    toast('Lugar guardado', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
+/* ============================================================  EDIT LOADERS  */
+async function editEvent(id){const snap=await loreRef.child('timeline').child(id).once('value');const d=snap.val();document.getElementById('eventId').value=id;document.getElementById('eventTitle').value=d.titulo||'';document.getElementById('eventDate').value=d.fecha||'';document.getElementById('eventDesc').value=d.descripcion||'';document.getElementById('eventType').value=d.tipo||'otro';document.getElementById('eventOrder').value=d.orden||0;if(d.imagen){document.getElementById('eventImgPrev').src=d.imagen;document.getElementById('eventImgPrev').style.display='block';document.getElementById('eventImgData').value=d.imagen;}showForm('eventForm');}
+async function editPersonaje(id){const snap=await loreRef.child('personajes').child(id).once('value');const d=snap.val();document.getElementById('personajeId').value=id;document.getElementById('personajeNombre').value=d.nombre||'';document.getElementById('personajeRol').value=d.rol||'neutral';document.getElementById('personajeDesc').value=d.descripcion||'';document.getElementById('personajeHabilidades').value=d.habilidades||'';tempConns=Array.isArray(d.conexiones)?JSON.parse(JSON.stringify(d.conexiones)):[];renderConnList();if(d.imagen){document.getElementById('personajeImgPrev').src=d.imagen;document.getElementById('personajeImgPrev').style.display='block';document.getElementById('personajeImgData').value=d.imagen;}showForm('personajeForm');}
+async function editLugar(id){const snap=await loreRef.child('lugares').child(id).once('value');const d=snap.val();document.getElementById('lugarId').value=id;document.getElementById('lugarNombre').value=d.nombre||'';document.getElementById('lugarTipo').value=d.tipo||'otro';document.getElementById('lugarDesc').value=d.descripcion||'';document.getElementById('lugarGobierno').value=d.gobierno||'';document.getElementById('lugarPoblacion').value=d.poblacion||'';document.getElementById('lugarHistoria').value=d.historia||'';document.getElementById('lugarEspecial').value=d.especial||'';tempPolitics=Array.isArray(d.politica)?JSON.parse(JSON.stringify(d.politica)):[];renderPoliticsList();if(d.imagen){document.getElementById('lugarImgPrev').src=d.imagen;document.getElementById('lugarImgPrev').style.display='block';document.getElementById('lugarImgData').value=d.imagen;}showForm('lugarForm');}
+async function editRelato(id){const snap=await loreRef.child('relatos').child(id).once('value');const d=snap.val();document.getElementById('relatoId').value=id;document.getElementById('relatoTitulo').value=d.titulo||'';document.getElementById('relatoContenido').value=d.contenido||'';document.getElementById('relatoEtiquetas').value=(d.etiquetas||[]).join(', ');document.getElementById('relatoCompendio').value=d.compendioId||'';document.getElementById('markdownPreview').innerHTML=marked.parse(d.contenido||'');if(d.imagen){document.getElementById('relatoImgPrev').src=d.imagen;document.getElementById('relatoImgPrev').style.display='block';document.getElementById('relatoImgData').value=d.imagen;}showForm('relatoForm');}
+async function editCompendio(id){const snap=await loreRef.child('compendios').child(id).once('value');const d=snap.val();document.getElementById('compendioId').value=id;document.getElementById('compendioNombre').value=d.nombre||'';document.getElementById('compendioDesc').value=d.descripcion||'';if(d.imagen){document.getElementById('compendioImgPrev').src=d.imagen;document.getElementById('compendioImgPrev').style.display='block';document.getElementById('compendioImgData').value=d.imagen;}showForm('compendioForm');}
 
-async function saveRelato() {
-  const id = document.getElementById('relatoId').value;
-  const data = {
-    titulo: document.getElementById('relatoTitulo').value.trim(),
-    contenido: document.getElementById('relatoContenido').value,
-    etiquetas: document.getElementById('relatoEtiquetas').value.split(',').map(s=>s.trim()).filter(Boolean),
-    compendioId: document.getElementById('relatoCompendio').value || null,
-    fechaCreacion: id ? undefined : Date.now(),
-  };
-  if (!data.titulo) { toast('El título es obligatorio', 'error'); return; }
-  if (!id) data.fechaCreacion = Date.now();
-  const imgData = document.getElementById('relatoImgData').value;
-  if (imgData) data.imagen = imgData;
-  // Remove undefined keys
-  Object.keys(data).forEach(k => data[k] === undefined && delete data[k]);
-  try {
-    if (id) await loreRef.child('relatos').child(id).update(data);
-    else await loreRef.child('relatos').push(data);
-    hideForm('relatoForm');
-    document.getElementById('relatoId').value = '';
-    document.getElementById('relatoContenido').value = '';
-    document.getElementById('markdownPreview').innerHTML = '<em>La vista previa aparecerá aquí...</em>';
-    resetImageField('relatoImg','relatoImgPreview','relatoImgData');
-    toast('Relato guardado', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function saveCompendio() {
-  const id = document.getElementById('compendioId').value;
-  const data = {
-    nombre: document.getElementById('compendioNombre').value.trim(),
-    descripcion: document.getElementById('compendioDesc').value.trim(),
-  };
-  if (!data.nombre) { toast('El nombre es obligatorio', 'error'); return; }
-  const imgData = document.getElementById('compendioImgData').value;
-  if (imgData) data.imagen = imgData;
-  try {
-    if (id) await loreRef.child('compendios').child(id).update(data);
-    else await loreRef.child('compendios').push(data);
-    hideForm('compendioForm');
-    document.getElementById('compendioId').value = '';
-    resetImageField('compendioImg','compendioImgPreview','compendioImgData');
-    toast('Compendio guardado', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function savePost() {
-  const titulo = document.getElementById('postTitulo').value.trim();
-  const contenido = document.getElementById('postContenido').value.trim();
-  const autor = document.getElementById('postAutor').value.trim() || 'Anónimo';
-  if (!titulo || !contenido) { toast('Título y contenido son obligatorios', 'error'); return; }
-  const data = { titulo, contenido, autor, fecha: Date.now() };
-  const imgData = document.getElementById('postImgData').value;
-  if (imgData) data.imagen = imgData;
-  try {
-    await foroPostsRef.push(data);
-    hideForm('newPostForm');
-    document.getElementById('postTitulo').value = '';
-    document.getElementById('postContenido').value = '';
-    document.getElementById('postAutor').value = '';
-    resetImageField('postImg','postImgPreview','postImgData');
-    toast('Publicación enviada', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function saveRespuesta(postId) {
-  const texto = (document.getElementById(`texto-${postId}`)||{}).value?.trim();
-  const autor = (document.getElementById(`autor-${postId}`)||{}).value?.trim() || 'Anónimo';
-  if (!texto) { toast('Escribe una respuesta', 'error'); return; }
-  const data = { postId, texto, autor, fecha: Date.now() };
-  const imgEl = document.getElementById(`img-${postId}Data`);
-  if (imgEl && imgEl.value) data.imagen = imgEl.value;
-  try {
-    await foroRespuestasRef.push(data);
-    document.getElementById(`reply-${postId}`).classList.remove('open');
-    if (document.getElementById(`texto-${postId}`)) document.getElementById(`texto-${postId}`).value = '';
-    toast('Respuesta enviada', 'success'); playSuccess();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-/* ============================================================
-   DELETE ITEMS
-============================================================ */
-async function deleteItem(col, id) {
-  const ok = await confirmDialog('¿Eliminar permanentemente este elemento?');
-  if (!ok) return;
-  try {
-    await loreRef.child(col).child(id).remove();
-    toast('Eliminado', 'info');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function deleteForoPost(id) {
-  const ok = await confirmDialog('¿Eliminar esta publicación y todas sus respuestas?');
-  if (!ok) return;
-  try {
-    await foroPostsRef.child(id).remove();
-    // También eliminar respuestas asociadas
-    const snap = await foroRespuestasRef.once('value');
-    const updates = {};
-    snap.forEach(r => { if (r.val().postId === id) updates[r.key] = null; });
-    if (Object.keys(updates).length) await foroRespuestasRef.update(updates);
-    toast('Publicación eliminada', 'info');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function deleteRespuesta(id) {
-  const ok = await confirmDialog('¿Eliminar esta respuesta?');
-  if (!ok) return;
-  try {
-    await foroRespuestasRef.child(id).remove();
-    toast('Respuesta eliminada', 'info');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-/* ============================================================
-   EDIT LOADERS
-============================================================ */
-async function editEvent(id) {
-  const snap = await loreRef.child('timeline').child(id).once('value');
-  const d = snap.val();
-  document.getElementById('eventId').value = id;
-  document.getElementById('eventTitle').value = d.titulo || '';
-  document.getElementById('eventDate').value = d.fecha || '';
-  document.getElementById('eventDesc').value = d.descripcion || '';
-  document.getElementById('eventType').value = d.tipo || 'otro';
-  if (d.imagen) {
-    document.getElementById('eventImgPreview').src = d.imagen;
-    document.getElementById('eventImgPreview').style.display = 'block';
-    document.getElementById('eventImgData').value = d.imagen;
-  }
-  showForm('eventForm');
-}
-
-async function editPersonaje(id) {
-  const snap = await loreRef.child('personajes').child(id).once('value');
-  const d = snap.val();
-  document.getElementById('personajeId').value = id;
-  document.getElementById('personajeNombre').value = d.nombre || '';
-  document.getElementById('personajeRol').value = d.rol || 'neutral';
-  document.getElementById('personajeDesc').value = d.descripcion || '';
-  document.getElementById('personajeRelaciones').value = (d.relaciones||[]).join(', ');
-  if (d.imagen) {
-    document.getElementById('personajeImgPreview').src = d.imagen;
-    document.getElementById('personajeImgPreview').style.display = 'block';
-    document.getElementById('personajeImgData').value = d.imagen;
-  }
-  showForm('personajeForm');
-}
-
-async function editLugar(id) {
-  const snap = await loreRef.child('lugares').child(id).once('value');
-  const d = snap.val();
-  document.getElementById('lugarId').value = id;
-  document.getElementById('lugarNombre').value = d.nombre || '';
-  document.getElementById('lugarTipo').value = d.tipo || 'otro';
-  document.getElementById('lugarDesc').value = d.descripcion || '';
-  if (d.imagen) {
-    document.getElementById('lugarImgPreview').src = d.imagen;
-    document.getElementById('lugarImgPreview').style.display = 'block';
-    document.getElementById('lugarImgData').value = d.imagen;
-  }
-  showForm('lugarForm');
-}
-
-async function editRelato(id) {
-  const snap = await loreRef.child('relatos').child(id).once('value');
-  const d = snap.val();
-  document.getElementById('relatoId').value = id;
-  document.getElementById('relatoTitulo').value = d.titulo || '';
-  document.getElementById('relatoContenido').value = d.contenido || '';
-  document.getElementById('relatoEtiquetas').value = (d.etiquetas||[]).join(', ');
-  document.getElementById('relatoCompendio').value = d.compendioId || '';
-  document.getElementById('markdownPreview').innerHTML = marked.parse(d.contenido || '');
-  if (d.imagen) {
-    document.getElementById('relatoImgPreview').src = d.imagen;
-    document.getElementById('relatoImgPreview').style.display = 'block';
-    document.getElementById('relatoImgData').value = d.imagen;
-  }
-  showForm('relatoForm');
-}
-
-async function editCompendio(id) {
-  const snap = await loreRef.child('compendios').child(id).once('value');
-  const d = snap.val();
-  document.getElementById('compendioId').value = id;
-  document.getElementById('compendioNombre').value = d.nombre || '';
-  document.getElementById('compendioDesc').value = d.descripcion || '';
-  if (d.imagen) {
-    document.getElementById('compendioImgPreview').src = d.imagen;
-    document.getElementById('compendioImgPreview').style.display = 'block';
-    document.getElementById('compendioImgData').value = d.imagen;
-  }
-  showForm('compendioForm');
-}
-
-/* ============================================================
-   MARKDOWN LIVE PREVIEW
-============================================================ */
-document.getElementById('relatoContenido')?.addEventListener('input', function() {
-  document.getElementById('markdownPreview').innerHTML = marked.parse(this.value || '');
-});
-
-/* ============================================================
-   CLOSE MODALS ON OVERLAY CLICK
-============================================================ */
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) closeModal(overlay.id);
-  });
-});
-
-/* ============================================================
-   ESCAPE KEY
-============================================================ */
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
-    document.getElementById('confirmOverlay').classList.remove('open');
-  }
-});
+/* ============================================================  MISC  */
+document.getElementById('relatoContenido')?.addEventListener('input',function(){document.getElementById('markdownPreview').innerHTML=marked.parse(this.value||'');});
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));document.getElementById('confirmOverlay').classList.remove('open');}});
 </script>
 </body>
 </html>
